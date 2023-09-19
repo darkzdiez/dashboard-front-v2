@@ -1,0 +1,10 @@
+Manejo de Sucursales
+Manejo de estados (Un catalogo donde defino el estado y un color)
+Cambiar estado de pedido
+Poder setear una opcion del pedido como por default
+Añadir un exportar de articulos a excel
+Solicitud de reintegro
+Cuando yo guardo un presupuesto, si un material se le aplica regla de reintegro, deberia guardar el reintegro que aplica en ese momento, porque despues la regla puede cambiar y lo ideal es que se utilice la regla cuando se elaboro el pedido
+Historico de precios 
+Historico de condicion de reintegro
+Se deberia pensar un historial de tambios por tablas, seria como un softdelete, pero un loggeable o algo asi para tener hisotrico de cambios
