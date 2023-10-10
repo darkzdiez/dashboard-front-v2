@@ -1,5 +1,9 @@
 <template>
-    <component :is="data.component" :data="data"></component>
+    <component
+        :is="data.component"
+        :data="data"
+    >
+    </component>
 </template>
 
 <script setup>

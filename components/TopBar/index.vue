@@ -66,18 +66,67 @@
         text-align: left;
         color: #555;
         gap: 5px;
+        justify-content: space-between;
         &__icon {
             color: var(--yellow);
         }
         &__text {
             font-size: 11px;
+            flex-grow: 1;
+            max-width: 260px;
+            overflow: hidden;
             p, h3 {
                 margin: 0;
+            }
+            h3 {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
         }
         &__date {
             font-size: 10px;
             color: #555;
+        }
+        &__show-more {
+            justify-content: center !important;
+            padding: 20px !important;
+            opacity: .7 !important;
+            font-size: 15px !important;
+            &:hover {
+                i {
+                    animation: rotate 1s linear infinite;
+                }
+            }
+        }
+
+        // Si text-card esta en hover, el texto se muestra completo y se anima como un carousel
+        &:hover {
+            .task-card__text {
+                h3 {
+                    white-space: nowrap;
+                    overflow: visible;
+                    text-overflow: unset;
+                    animation: carousel 10s linear infinite;
+                }
+            }
+        }
+    }
+    @keyframes carousel {
+        0% {
+            transform: translateX(0);
+        }
+        100% {
+            transform: translateX(-100%);
+        }
+    }
+
+    @keyframes rotate {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
         }
     }
 </style>

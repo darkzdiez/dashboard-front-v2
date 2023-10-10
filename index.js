@@ -28,6 +28,7 @@ import ButtonAlert from './components/Notes/ButtonAlert.vue'
 import { InputsRegister } from './components/Inputs/index'
 import { BoxesRegister }  from './components/Boxes/index.js'
 import Modal from './components/Modal/index.vue'
+import TopBarJobs from './components/TopBar/TopBarJobs.vue'
 
 
 const dashboardFront = ({
@@ -74,6 +75,8 @@ const dashboardFront = ({
     app.component('Main', Main)
     app.component('Paginator', Paginator)
     app.component('Modal', Modal)
+    
+    app.component('TopBarJobs', TopBarJobs)
     
     InputsRegister(app)
     BoxesRegister(app)
@@ -407,6 +410,8 @@ const dashboardFront = ({
         const filters = reactive({})
 
         const permanentFilters = reactive([])
+
+        const permanentSort = reactive([])
     
         // defino la variable appliedFilters, que se usará para almacenar los filtros de búsqueda aplicados
         const appliedFilters = reactive({})
@@ -500,12 +505,18 @@ const dashboardFront = ({
             permanentFilters.splice(0, permanentFilters.length)
             const permanentFiltersState = JSON.parse(localStorage.getItem('permanent-filters-state-pedido'))
             if (permanentFiltersState) {
-                permanentFiltersState.forEach((permanentFilter) => {
-                    permanentFilters.push(permanentFilter)
+                permanentFiltersState.forEach((filter) => {
+                    permanentFilters.push(filter)
+                })
+            }
+            permanentSort.splice(0, permanentSort.length)
+            const permanentSortState = JSON.parse(localStorage.getItem('permanent-sort-state-pedido'))
+            if (permanentSortState) {
+                permanentSortState.forEach((sort) => {
+                    permanentSort.push(sort)
                 })
             }
         }
-        
 
         // se define la función syncData, que se encarga de sincronizar los datos con la api
         const syncData = (url) => {
@@ -537,10 +548,14 @@ const dashboardFront = ({
 
             // se agregan los filtros permanentes
             loadPermanentFilters()
-            permanentFilters.forEach((permanentFilter, index) => {
-                form_data.append('permanent_filters[' + index + '][column]',   permanentFilter.column)
-                form_data.append('permanent_filters[' + index + '][operator]', permanentFilter.operator)
-                form_data.append('permanent_filters[' + index + '][value]',    permanentFilter.value)
+            permanentFilters.forEach((filter, index) => {
+                form_data.append('permanent_filters[' + index + '][column]',   filter.column)
+                form_data.append('permanent_filters[' + index + '][operator]', filter.operator)
+                form_data.append('permanent_filters[' + index + '][value]',    filter.value)
+            })
+            permanentSort.forEach((sort, index) => {
+                form_data.append('permanent_sort[' + index + '][column]', sort.column)
+                form_data.append('permanent_sort[' + index + '][order]',  sort.order)
             })
             
             // se realiza la petición a la api

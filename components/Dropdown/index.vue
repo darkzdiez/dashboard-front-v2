@@ -78,6 +78,9 @@ window.addEventListener('keydown', (e) => {
             overflow: hidden;
             white-space: nowrap;
             padding: 10px 15px;
+
+            width: 100%;
+            box-sizing: border-box;
             &:hover {
                 background-color: #f5f5f5;
             }
