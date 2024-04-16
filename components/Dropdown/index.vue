@@ -32,7 +32,6 @@ window.addEventListener('keydown', (e) => {
 <style lang="scss">
     .dropdown {
         position: relative;
-        background-color: transparent;
         border: none;
         outline: none;
         &__button {
@@ -58,6 +57,7 @@ window.addEventListener('keydown', (e) => {
             border: 1px solid #d9d9d9;
             border-bottom: none;
             width: max-content;
+            z-index: 10;
         }
         &__item {
             display: flex;

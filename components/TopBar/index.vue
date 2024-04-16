@@ -45,7 +45,7 @@
         }
         &__menu {
             margin-left: auto;
-            z-index: 1;
+            z-index: 10;
             display: flex;
             height: 100%;
         }
@@ -59,6 +59,8 @@
             cursor: pointer;
             justify-content: center;
             align-items: center;
+            background: transparent;
+            border: none;
         }
     }
     .task-card {
@@ -67,6 +69,7 @@
         color: #555;
         gap: 5px;
         justify-content: space-between;
+        position: relative;
         &__icon {
             color: var(--yellow);
         }
@@ -87,6 +90,13 @@
         &__date {
             font-size: 10px;
             color: #555;
+        }
+        &__duration {
+            font-size: 10px;
+            color: #555;
+            position: absolute;
+            bottom: 10px;
+            right: 15px;
         }
         &__show-more {
             justify-content: center !important;

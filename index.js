@@ -290,7 +290,16 @@ const dashboardFront = ({
                     window.$globalState.auth.status = 'error'
                     window.$globalState.render = true
                     awesomeModal.closeAll()
-                    router.push('/login')
+                    // URL accedible sin autenticación
+                    let URLs = [
+                        '/login',
+                        '/register',
+                        '/recover-password',
+                        '/password-reset'
+                    ]
+                    if (!URLs.includes(router.currentRoute.value.path)) {
+                        router.push('/login')
+                    }
                     resolve(false)
                     return
                 }
@@ -394,9 +403,25 @@ const dashboardFront = ({
             cachePrefix: '',
             deleteEnpoint: '', // example: window.public_path + '/api/pedido/delete/${uuid}'
             restoreEnpoint: '', // example: window.public_path + '/api/pedido/restore/${uuid}'
-        }
+        },
+        appendFormData = []
     }) => {
         const trash = ref(false)
+
+        const sort = reactive({
+            column: null,
+            order: null,
+        })
+
+        const sortBy = (column) => {
+            if (column == sort.column) {
+                sort.order = toggle(sort.order, 'asc', 'desc')
+            } else {
+                sort.column = column
+                sort.order = 'asc'
+            }
+            syncData()
+        }
         // defino la variable paginator, que se usará para almacenar los datos de la paginación
         const paginator = reactive({})
     
@@ -440,6 +465,11 @@ const dashboardFront = ({
 
         // se define la función clearFilters, que se ejecutará al hacer click en el botón de limpiar filtros
         const clearFilters = () => {
+            // clear sort
+            sort.column = null
+            sort.order = null
+
+            // se limpian los filtros
             for (const key in filters) {
                 filters[key] = ''
             }
@@ -455,18 +485,18 @@ const dashboardFront = ({
                 '¿Está seguro que desea eliminar este registro?',
             ).then((result) => {
                 if (result) {
-                    window.awesomeModal.loading()
+                    let modal = window.awesomeModal.loading()
                     httpRequest({
                         url: config.deleteEnpoint.replace('${uuid}', item.uuid),
                         method: 'GET'
                     })
                     .then((data) => {
-                        window.awesomeModal.closeAll()
+                        modal.close()
                         window.awesomeModal.alert('Registro eliminado correctamente')
                         syncData()
                     })
                     .catch((error) => {
-                        window.awesomeModal.closeAll()
+                        modal.close()
                         if (error.response.status === 422) {
                             errors.po = error.response.data.errors.po
                         }
@@ -481,18 +511,18 @@ const dashboardFront = ({
                 '¿Está seguro que desea restaurar este registro?',
             ).then((result) => {
                 if (result) {
-                    window.awesomeModal.loading()
+                    let modal = window.awesomeModal.loading()
                     httpRequest({
                         url: config.restoreEnpoint.replace('${uuid}', item.uuid),
                         method: 'GET'
                     })
                     .then((data) => {
-                        window.awesomeModal.closeAll()
+                        modal.close()
                         window.awesomeModal.alert('Registro restaurado correctamente')
                         syncData()
                     })
                     .catch((error) => {
-                        window.awesomeModal.closeAll()
+                        modal.close()
                         if (error.response.status === 422) {
                             errors.po = error.response.data.errors.po
                         }
@@ -541,9 +571,21 @@ const dashboardFront = ({
                     form_data.append('filters[' + key + ']', value)
                 }
             }
+
+            // appendFormData
+            console.clear()
+            appendFormData.forEach((item) => {
+                console.log(item)
+                form_data.append(item.key, item.value)
+            })
             // si la variable trash es true
             if (trash.value) {
                 form_data.append('trash', 1)
+            }
+
+            if (sort.column) {
+                form_data.append('sort[column]', sort.column)
+                form_data.append('sort[order]', sort.order)
             }
 
             // se agregan los filtros permanentes
@@ -600,11 +642,14 @@ const dashboardFront = ({
         })
     
         return {
+            sort,
+            sortBy,
             trash,
             paginator,
             endpoint,
             filters,
             appliedFilters,
+            appendFormData,
             applyFilters,
             applyAction,
             clearFilters,

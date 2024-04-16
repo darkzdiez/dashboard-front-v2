@@ -18,6 +18,7 @@
     --darkred: #c71c1c;
     --blue: #005ba6;
     --lightblue: #cce5ff;
+    --darkblue: #23577E;
 }
 
 @import "./base.scss";
@@ -33,6 +34,24 @@
     width: 100%;
 }
 
+.card {
+    border: 1px solid #C4C4C4;
+    &__header {
+        background: #E1E5E9;
+        text-align: left;
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 19px;
+        color: #656565;
+        padding: 10.5px 20px;
+        border-bottom: 1px solid #C4C4C4;
+        user-select: none;
+    }
+    &__body {
+        background: #FFF;
+        padding: 10.5px 20px;
+    }
+}
 
 table {
     width: 100%;
@@ -80,6 +99,8 @@ table {
                     gap: 7.5px;
                     padding: 5px 20px;
                     text-align: right;
+                    margin-left: auto;
+                    max-width: fit-content;
                 }
                 .btns {
                     // margin: -10.5px -20px;
@@ -241,4 +262,28 @@ hr {
             transform: translate(0px, 0px) scale(1);
         }
     }
+}
+
+.table__sort {
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    padding-right: 15px !important;
+    i {
+        position: absolute;
+        right: 5px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+}
+.row-top-sticky {
+    position: -webkit-sticky;
+    position: sticky;
+    top: -41px;
+    z-index: 1;
+}
+.col-end-sticky {
+    position: -webkit-sticky;
+    position: sticky;
+    right: -31px;
 }

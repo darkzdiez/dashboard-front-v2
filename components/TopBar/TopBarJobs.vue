@@ -58,6 +58,9 @@
             <div class="task-card__date">
                 {{ job.created_at }}
             </div>
+            <div class="task-card__duration">
+                {{ job.duration_human }}
+            </div>
         </button>
         <div class="dropdown__item task-card__show-more" v-if="jobs.last_page > jobs.from">
             <i class="fas fa-sync-alt"></i>

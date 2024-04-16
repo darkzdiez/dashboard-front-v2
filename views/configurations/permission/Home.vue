@@ -46,19 +46,21 @@
                 <td>{{ item.name }}</td>
                 <td>{{ item.guard_name }}</td>
                 <td>{{ item.description }}</td>
-                <td class="btns">
-                    <router-link
-                        :to="'/permission/' + item.id + '/edit'"
-                        class="btn btn--green"
-                    >
-                        <i class="fas fa-edit"></i>
-                    </router-link>
-                    <button
-                        class="btn btn--red"
-                        @click="onDelete(item.id)"
-                    >
-                        <i class="fas fa-trash"></i>
-                    </button>
+                <td>
+                    <div class="btns">
+                        <router-link
+                            :to="'/permission/' + item.id + '/edit'"
+                            class="btn btn--green"
+                        >
+                            <i class="fas fa-edit"></i>
+                        </router-link>
+                        <button
+                            class="btn btn--red"
+                            @click="onDelete(item.id)"
+                        >
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
                 </td>
             </tr>
         </tbody>

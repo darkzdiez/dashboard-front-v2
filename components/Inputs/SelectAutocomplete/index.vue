@@ -199,6 +199,10 @@ const state = reactive({
     submit: (e) => {
         e.preventDefault()
         e.stopPropagation();
+        if ( !props.endpoint && props.options ) {
+            filterOptions()
+            return
+        }
         syncData()
     }
 })
@@ -221,10 +225,39 @@ window.addEventListener('keydown', (e) => {
     }
 }, false)
 
+const filterOptions = () => {
+    if ( !props.options ) {
+        return
+    }
+    if ( !props.options.length ) {
+        return
+    }
+    // filtrar el array de options con el valor de state.search y asignarlo a paginator.data
+    let filtered = props.options.filter((option) => {
+        let found = false
+        Object.keys(option).forEach((key) => {
+            if ( Object.prototype.toString.call(option[key]) == '[object String]' ) {
+                if ( option[key].toLowerCase().includes(state.search.toLowerCase()) ) {
+                    found = true
+                }
+            }
+        })
+        return found
+    })
+    // limpiar paginator.data
+    paginator.data.splice(0, paginator.data.length)
+    // asignar filtered a paginator.data
+    paginator.data.push(...filtered)
+}
+
 const syncData = () => {
     // let modal = awesomeModal.loading()
+    if ( !props.endpoint && props.options.length ) {
+        paginator.data.push(...props.options)
+        return
+    }
     if ( !props.endpoint ) {
-        paginator.data = props.options
+        console.error('No se ha definido el endpoint')
         return
     }
     let url = new URL(window.public_path + props.endpoint)
@@ -418,7 +451,7 @@ watch(() => props.chainedTo, (value) => {
             white-space: nowrap;
             overflow: hidden;
             max-width: calc(100% - 50px);
-            position: absolute;
+            // position: absolute;
             text-overflow: ellipsis;
         }
         &__button {

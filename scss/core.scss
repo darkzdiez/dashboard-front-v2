@@ -325,6 +325,22 @@ $container-sizes: (
             background-color: var(--darkred);
         }
     }
+    &--darkblue {
+        background-color: var(--darkblue);
+        color: var(--white);
+        &:hover {
+            background-color: var(--blue);
+        }
+    }
+    &--darkblue-outline {
+        background-color: transparent;
+        color: var(--blue);
+        border: 1px solid var(--blue);
+        &:hover {
+            background-color: var(--blue);
+            color: var(--white);
+        }
+    }
     @media (max-width: 768px) {
         padding: 12px 32px;
         font-size: 16px;
@@ -526,6 +542,12 @@ $class-promerties: (
         }
     }
 }
+.flex-column {
+    flex-direction: column;
+}
+.flex-row {
+    flex-direction: row;
+}
 .m-auto {
     margin: auto;
 }
@@ -686,7 +708,44 @@ $class-promerties: (
         background: linear-gradient(90deg, #FF2020 50%, #00C853 50%);
     }
 }
-
+.badge {
+    display: inline-block;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+    border-radius: 4px;
+    &--red {
+        background: #FF2020;
+        color: #FFFFFF;
+    }
+    &--green {
+        background: #00C853;
+        color: #FFFFFF;
+    }
+    &--yellow {
+        background: #FFC107;
+        color: #FFFFFF;
+    }
+    &--blue {
+        background: #00AEEE;
+        color: #FFFFFF;
+    }
+    &--gray {
+        background: #9A9A9A;
+        color: #FFFFFF;
+    }
+    &--red-green {
+        background: linear-gradient(90deg, #FF2020 50%, #00C853 50%);
+        color: #FFFFFF;
+    }
+    // si esta colocada la clase badge--striped se le hace un opacity .8 a los elementos impares
+    &--stripe {
+        &:nth-child(even) {
+            opacity: .8;
+        }
+    }
+}
 h1 {
     line-height: 40px;
     font-size: 32px;
