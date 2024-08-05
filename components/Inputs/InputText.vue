@@ -128,9 +128,15 @@
             font-weight: 500;
             line-height: 19px;
             color: #9A9A9A;
-            font-size: 14px;
+            font-size: 13px;
             margin-bottom: 9px;
             display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            &:hover {
+                overflow: unset;
+            }
         }
         input {
             width: 100%;
@@ -161,16 +167,6 @@
 				opacity: 1;
 			}
         }
-        .input__errors {
-            color: #FF0000;
-            font-weight: 400;
-            line-height: 130%;
-            opacity: 1;
-            margin: 0;
-            padding: 3px 0 3px 20px;
-            font-size: 14px;
-        }
-
         &.input--error {
             color: #FF0000;
             input {

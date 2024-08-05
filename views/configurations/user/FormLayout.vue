@@ -33,6 +33,7 @@
     </div>
     <h3>Permisos:</h3>
     <div class="grid-2 gap-15">
+        <!--
         <InputSelect
             label="Es Super Administador (ROOT)"
             placeholder=""
@@ -50,6 +51,21 @@
                 </option>
             </template>
         </InputSelect>
+        -->
+        <SelectAutocomplete
+            label="Organización"
+            v-model="form.organization_id"
+            endpoint="/api/organization/list-select"
+            :error="[]"
+            class="col-1"
+            option-key="id"
+        >
+            <template #option="option">
+                <div>
+                    {{ ( option?.name ) }}
+                </div>
+            </template>
+        </SelectAutocomplete>
     </div>
     <h3>Grupos:</h3>
     <div class="grid-3 gap-15" v-if="groups.data && groups.data.length > 0">
@@ -57,7 +73,7 @@
             v-for="(item, key) in groups.data"
             :key="key"
             :label="item.name"
-            :true-value="item.id"
+            :true-value="item.uuid"
             v-model="form.groups"
         />
     </div>

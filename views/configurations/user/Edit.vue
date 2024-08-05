@@ -12,7 +12,8 @@
         username: '',
         email: '',
         password: '',
-        root: 0,
+        // root: 0,
+        organization_id: null,
         groups: [],
     })
 
@@ -21,7 +22,8 @@
         username: [],
         email: [],
         password: [],
-        root: [],
+        // root: [],
+        organization_id: [],
         groups: [],
     })
     let modal = awesomeModal.loading()
@@ -33,6 +35,8 @@
         form.name     = data.name
         form.username = data.username
         form.email    = data.email
+        // form.root     = data.root
+        form.organization_id = data.organization_id
         Object.assign(form.groups, data.groups)
         modal.close()
     })
@@ -48,8 +52,10 @@
         form_data.append("username", form.username);
         form_data.append("email",    form.email);
         form_data.append("password", form.password);
-        form_data.append("root",     form.root);
+        // form_data.append("root",     form.root);
+        form_data.append("organization_id", form.organization_id);
         form_data.append("groups",   form.groups);
+
         // clear all errors
         Object.keys(errors).forEach(key => {
             errors[key].splice(0, errors[key].length)

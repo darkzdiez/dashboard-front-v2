@@ -7,7 +7,9 @@
             @input="$emit('update:modelValue', $event.target.value)"
             >
             <slot v-for="option in options" v-bind="option" name="option"></slot>
+            <slot name="raw-options"></slot>
         </select>
+        <InputErrors :errors="error" />
     </label>
 </template>
 
@@ -28,6 +30,7 @@ const props = defineProps({
     error: {
         type: Array,
         required: false,
+        default: () => [],
     },
     options: {
         type: Array,
@@ -77,16 +80,6 @@ defineEmits(['update:modelValue'])
 				opacity: 0;
 			}
         }
-        .input__errors {
-            color: #FF0000;
-            font-weight: 400;
-            line-height: 130%;
-            opacity: 1;
-            margin: 0;
-            padding: 3px 0 3px 20px;
-            font-size: 14px;
-        }
-
         &.input--error {
             color: #FF0000;
             input {

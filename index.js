@@ -117,7 +117,8 @@ const dashboardFront = ({
         url,
         method = 'GET',
         data,
-        errors
+        errors,
+        displayModalErrors = true
     }) => {
         if (errors && Object.prototype.toString.call(errors) === '[object Object]') {
             // clear all errors
@@ -163,13 +164,15 @@ const dashboardFront = ({
                             Object.assign(errors, data.errors)
                         } else {
                         }
-                        awesomeModal.error('Tiene errores en el formulario', `
-                            ${ '<ul style="border: 1px solid #F00; padding-top: 15px; padding-bottom: 15px; background-color: #ffb6b61f;">' + Object.keys(data.errors).map((key) => {
-                                return data.errors[key].map((error) => {
-                                    return `<li class="mb-2" style="text-align: left; color: #F00;">${error}</li>`
-                                }).join('')
-                            }).join('') + '</ul>' }
-                        `)
+                        if (displayModalErrors) {
+                            awesomeModal.error('Tiene errores en el formulario', `
+                                ${ '<ul style="border: 1px solid #F00; padding-top: 15px; padding-bottom: 15px; background-color: #ffb6b61f;">' + Object.keys(data.errors).map((key) => {
+                                    return data.errors[key].map((error) => {
+                                        return `<li class="mb-2" style="text-align: left; color: #F00;">${error}</li>`
+                                    }).join('')
+                                }).join('') + '</ul>' }
+                            `)
+                        }
                         reject(data)
                     })
                 }
@@ -222,7 +225,23 @@ const dashboardFront = ({
     window.$globalState.render = false
 
     window.userCan = (permission) => {
-        return window?.$globalState?.auth?.status == "success" && window?.$globalState?.auth?.user?.permissions[permission] && window?.$globalState?.auth?.user?.permissions[permission]?.access == true
+        if ( window?.$globalState?.auth?.status == "success" ) {
+            if ( window?.$globalState?.auth?.user?.permissions[permission] && window?.$globalState?.auth?.user?.permissions[permission]?.access == true ) {
+                return true
+            }
+            // puede ser que el permiso este escrito de esta manera pedido-* y se debe verificar si tiene acceso a pedido-crear, pedido-eliminar, pedido-editar, etc, al menos a uno
+            let permissions = Object.keys(window?.$globalState?.auth?.user?.permissions)
+            let exp = permission.replace('*', '')
+            let hasAccess = false
+            permissions.forEach((p) => {
+                if ( p.startsWith(exp) ) {
+                    if ( window?.$globalState?.auth?.user?.permissions[p].access == true ) {
+                        hasAccess = true
+                    }
+                }
+            })
+            return hasAccess
+        }
     }
     $globalState.sidebar = {
         // side-bar__wrapper--relative
@@ -400,13 +419,21 @@ const dashboardFront = ({
         actions = {},
         config = {
             layout: [],
-            cachePrefix: '',
+            cachePrefix: null,
             deleteEnpoint: '', // example: window.public_path + '/api/pedido/delete/${uuid}'
             restoreEnpoint: '', // example: window.public_path + '/api/pedido/restore/${uuid}'
         },
         appendFormData = []
     }) => {
+        let query = null;
+
         const trash = ref(false)
+
+        const page = ref(null)
+
+        watch(page, () => {
+            sessionStorage.setItem('table-page-' + config.cachePrefix, page.value)
+        })
 
         const sort = reactive({
             column: null,
@@ -441,20 +468,53 @@ const dashboardFront = ({
         // defino la variable appliedFilters, que se usará para almacenar los filtros de búsqueda aplicados
         const appliedFilters = reactive({})
     
-        // se inicializan los filtros
         filtersKeys.forEach((key) => {
             filters[key] = ''
-            appliedFilters[key] = ''
+            appliedFilters[key] = ''        
         })
 
-        // se define la función applyFilters, que se ejecutará al hacer click en el botón de buscar
-        const applyFilters = () => {
-            // se asignan los valores de los filtros a la variable appliedFilters
+        if ( config.cachePrefix ) {
+            let storeFilters = sessionStorage.getItem('table-filters-' + config.cachePrefix)
+            if (storeFilters) {
+                storeFilters = JSON.parse(storeFilters)
+            } else {
+                storeFilters = {}
+            }
             filtersKeys.forEach((key) => {
-                appliedFilters[key] = filters[key]
-            })    
+                if ( route.query['filters['+key+']'] ) {
+                    filters[key] = route.query['filters['+key+']']
+                    appliedFilters[key] = route.query['filters['+key+']']
+                } else if ( storeFilters[key] ) {
+                    filters[key] = storeFilters[key]
+                    appliedFilters[key] = storeFilters[key]
+                }
+            })
+        }
+
+        // se define la función applyFilters, que se ejecutará al hacer click en el botón de buscar
+        const applyFilters = ( params = {
+            prespreserveLastPage: false
+        }) => {
+            if ( !params.prespreserveLastPage ) {
+                sessionStorage.removeItem("table-page-pedido");
+            }
+            // se asignan los valores de los filtros a la variable appliedFilters
+            query = {
+                ...route.query,
+            }
+            filtersKeys.forEach((key) => {
+                appliedFilters[key] = filters[key] ? filters[key] : undefined 
+                query['filters['+key+']'] = appliedFilters[key]
+            })
+            // console.log(query)
+            router.push({ query: query })
             // se ejecuta la función syncData, que se encarga de sincronizar los datos con la api
-            syncData(endpoint.dataUrl)
+            if ( config.cachePrefix ) {
+                sessionStorage.setItem('table-filters-' + config.cachePrefix, JSON.stringify(appliedFilters))
+            }
+            syncData(endpoint.dataUrl, {
+                prespreserveLastPage: params.prespreserveLastPage
+            })
         }
 
         const applyAction = (action) => {
@@ -471,11 +531,15 @@ const dashboardFront = ({
 
             // se limpian los filtros
             for (const key in filters) {
-                filters[key] = ''
+                filters[key] = null
             }
             for (const key in appliedFilters) {
-                appliedFilters[key] = ''
+                appliedFilters[key] = null
             }
+            
+            router.push({ query: {} })
+            sessionStorage.removeItem("table-filters-pedido");
+            sessionStorage.removeItem("table-page-pedido");
             syncData(endpoint.dataUrl)
         }
 
@@ -549,7 +613,8 @@ const dashboardFront = ({
         }
 
         // se define la función syncData, que se encarga de sincronizar los datos con la api
-        const syncData = (url) => {
+        const syncData = (url, add = { prespreserveLastPage: false }) => {
+            console.log(add)
             // se muestra el modal de carga
             let modal = awesomeModal.loading()
             // se verifica si el endpoint tiene la propiedad lastUrl, si no la tiene, se le asigna el valor de dataUrl
@@ -573,9 +638,9 @@ const dashboardFront = ({
             }
 
             // appendFormData
-            console.clear()
+            // console.clear()
             appendFormData.forEach((item) => {
-                console.log(item)
+                // console.log(item)
                 form_data.append(item.key, item.value)
             })
             // si la variable trash es true
@@ -601,6 +666,16 @@ const dashboardFront = ({
             })
             
             // se realiza la petición a la api
+            // console.log(filters)
+            page.value = ((new URL(url)).searchParams).get('page')
+            if ( add.prespreserveLastPage ) {
+                let storagePage = sessionStorage.getItem('table-page-' + config.cachePrefix)
+                if ( !page.value && storagePage ) {
+                    let newUrl = (new URL(url))
+                    newUrl.searchParams.set('page', storagePage)
+                    url = newUrl.href
+                }
+            }
             httpRequest({
                 url: url,
                 method: 'POST',

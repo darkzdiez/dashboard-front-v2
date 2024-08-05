@@ -65,6 +65,10 @@
             </tr>
         </tbody>
     </table>
+    <Paginator
+        :paginator="pagination.paginator"
+        @change="pagination.syncData"
+    />
 </template>
 
 <script setup>

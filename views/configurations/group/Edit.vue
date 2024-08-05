@@ -75,7 +75,7 @@
     <form @submit.prevent="onSubmit">
         <SectionHeader>
             <template #title>
-                Editar Usuario
+                Editar Rol/Grupo
             </template>
             <template #buttons>
                 <router-link

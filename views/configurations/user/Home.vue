@@ -46,7 +46,9 @@
                 <th>Nombre</th>
                 <th>Nombre de Usuario</th>
                 <th>Email</th>
+                <th>Roles</th>
                 <th>Entorno</th>
+                <th>Organización</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -56,6 +58,8 @@
                 <td><input type="text" v-model="pagination.filters.name" @keyup.enter="pagination.applyFilters" /></td>
                 <td><input type="text" v-model="pagination.filters.username" @keyup.enter="pagination.applyFilters" /></td>
                 <td><input type="text" v-model="pagination.filters.email" @keyup.enter="pagination.applyFilters" /></td>
+                <td></td>
+                <td></td>
                 <td></td>
                 <td>
                     <div class="btns">
@@ -73,7 +77,9 @@
                 <td>{{ item.name }}</td>
                 <td>{{ item.username }}</td>
                 <td>{{ item.email }}</td>
+                <td>{{ item.groups.map((group) => group.name).join(', ') }}</td>
                 <td>{{ item.environment }}</td>
+                <td>{{ item.organization?.name }}</td>
                 <td>
                     <div class="btns">
                         <router-link
@@ -98,7 +104,7 @@
                         </button>
                         <button
                             class="btn btn--gray"
-                            @click="loginAs(item.id)"
+                            @click="loginAs(item.uuid)"
                             v-if="userCan('login-as')"
                         >
                             <i class="fas fa-sign-in-alt"></i>

@@ -1,7 +1,7 @@
 <template>
     <SectionHeader>
         <template #title>
-            Grupos
+            Roles/Grupos
         </template>
         <template #buttons>
             <router-link
@@ -61,6 +61,7 @@
                     <th>Guard</th>
                     <th>Descipción</th>
                     <th>Padre</th>
+                    <th>Organización</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -70,6 +71,7 @@
                     <td><input type="text" v-model="pagination.filters.name" @keyup.enter="pagination.applyFilters" /></td>
                     <td><input type="text" v-model="pagination.filters.guard_name" @keyup.enter="pagination.applyFilters" /></td>
                     <td><input type="text" v-model="pagination.filters.description" @keyup.enter="pagination.applyFilters" /></td>
+                    <td></td>
                     <td></td>
                     <td>
                         <div class="btns">
@@ -88,6 +90,7 @@
                     <td>{{ item.guard_name }}</td>
                     <td v-html="item.description"></td>
                     <td>{{ item.parent ? item.parent.name : '' }}</td>
+                    <td>{{ item.organization?.name }}</td>
                     <td>
                         <div class="btns">
                             <router-link

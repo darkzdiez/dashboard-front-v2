@@ -19,9 +19,17 @@
         >
             GRUPOS
         </button>
+        <button
+            class="tabs__tab"
+            :class="{ 'tabs__tab--active': tab == 'backups' }"
+            @click.prevent="tab = 'backups'"
+        >
+            BACKUPS
+        </button>
     </div>
     <TabTables v-if="tab == 'tables'" />
     <TabGroups v-if="tab == 'groups'" />
+    <TabBackups v-if="tab == 'backups'" />
 </template>
 
 <script setup>
@@ -29,6 +37,7 @@
     import { useRoute, useRouter } from 'vue-router'
     import TabTables from './Tabs/TabTables.vue'
     import TabGroups from './Tabs/TabGroups.vue'
+    import TabBackups from './Tabs/TabBackups.vue'
 
     const route = useRoute()
     const router = useRouter()

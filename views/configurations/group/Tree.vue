@@ -1,13 +1,13 @@
 <script setup>
     import { reactive } from "@vue/reactivity";
 
-    defineProps({
+    const props = defineProps({
         data: {
             type: Array,
             required: true,
         },
         parent: {
-            type: Number,
+            type: String,
             default: null,
         },
         level: {
@@ -15,7 +15,6 @@
             default: 0,
         },
     })
-
     // El bgcolor sera calculado en base al nivel del elemento
     // Se comenzara con el color #e38383 y se ira moviendo, por ejemplo el 1 sera #e383a6 y asi se movera de lo mas
     // calido a lo mas frio
@@ -58,7 +57,7 @@
     <template v-for="(item, key) in data" :key="key">
         <div
             class="tree"
-            v-if="item.parent_id == parent"
+            v-if="item.parent_uuid == parent"
             :class="{ 'tree--root': level == 0 }"
         >
             <div
@@ -74,7 +73,7 @@
             <div class="tree__content">
                 <Tree
                     :data="data"
-                    :parent="item.id"
+                    :parent="item.uuid"
                     :level="level + 1"
                 />
             </div>

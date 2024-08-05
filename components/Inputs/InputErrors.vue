@@ -17,10 +17,15 @@ defineProps({
     .input-errors {
         color: #FF0000;
         font-weight: 400;
-        line-height: 130%;
+        line-height: 110%;
         opacity: 1;
-        margin: 0;
-        padding: 3px 0 3px 20px;
-        font-size: 14px;
+        font-size: 11px;
+        padding: 0;
+        list-style-type: decimal;
+        display: flex;
+        gap: 2px;
+        flex-direction: column;
+        margin: 2px 0 0 0;
+        list-style-position: inside;
     }
 </style>

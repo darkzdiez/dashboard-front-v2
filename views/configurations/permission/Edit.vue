@@ -69,7 +69,7 @@
     <form @submit.prevent="onSubmit">
         <SectionHeader>
             <template #title>
-                Editar Usuario
+                Editar Permiso
             </template>
             <template #buttons>
                 <router-link

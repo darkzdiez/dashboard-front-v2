@@ -351,7 +351,6 @@ const click = () => {
 
 
 const find = (optionKey) => {
-    console.log('find')
     if ( Object.prototype.toString.call(optionKey) === '[object Array]' ) { // si es un array
         let selected = []
         optionKey.forEach((item) => {
@@ -362,7 +361,7 @@ const find = (optionKey) => {
                 }
             })
         })
-        console.log(state.selected, selected)
+        // console.log(state.selected, selected)
         if ( Object.prototype.toString.call(state.selected) === '[object Array]' ) {
             Object.assign(state.selected, selected)
         } else {
@@ -407,22 +406,26 @@ const find = (optionKey) => {
     */
 }
 onMounted(() => {
-    console.log('onMounted')
+    // console.log('onMounted')
     if (props.modelValue) {
-        console.log('onMounted')
-        console.log(props.modelValue)
+        // console.log('onMounted')
+        // console.log(props.modelValue)
         find(props.modelValue)
     }
 })
 
 watch(() => props.modelValue, (value) => {
-    find(value)
+    if ( props.modelValue ) {
+        find(value)
+    } else {
+        state.select(null)
+    }
 })
 
 // si chainedTo cambia, se debe limpiar state.search
 // y ejecutar syncData()
 watch(() => props.chainedTo, (value) => {
-    console.log('chainedTo')
+    // console.log('chainedTo')
     state.search = ''
     syncData()
 })

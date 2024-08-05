@@ -9,9 +9,7 @@
             autocomplete="off"
             @input="$emit('update:modelValue', $event.target.value)"
         >
-        <ul v-if="error.length > 0" class="input__errors">
-            <li v-for="error in error" :key="error" v-html="error"></li>
-        </ul>
+        <InputErrors :errors="error" />
     </label>
 </template>
 
@@ -76,15 +74,6 @@ defineEmits(['update:modelValue'])
 			&::-webkit-input-placeholder {
 				opacity: 0;
 			}
-        }
-        .input__errors {
-            color: #FF0000;
-            font-weight: 400;
-            line-height: 130%;
-            opacity: 1;
-            margin: 0;
-            padding: 3px 0 3px 20px;
-            font-size: 14px;
         }
 
         &.input--error {

@@ -22,7 +22,7 @@
             :error="errors.parent_id"
             class="col-1"
             option-key="id"
-            :itemConditional="(option) => { console.log([ 'demo' ]); option.uuid != route.params.uuid }"
+            :itemConditional="(option) => { return option.uuid != route.params.id }"
         >
             <template #option="{ id, name, uuid }">
                 <div>
@@ -33,6 +33,7 @@
         <wysiwyg-editor label="Descripción" v-model="form.description" :error="errors.description" class="col-3" />
     </div>
     <h3>Permisos:</h3>
+    <!--
     <div class="grid-3 gap-15" v-if="permissions.data && permissions.data.length > 0">
         <InputCheckbox
             v-for="(item, key) in permissions.data"
@@ -42,6 +43,8 @@
             v-model="form.permissions"
         />
     </div>
+    -->
+    <PermissionsList :form="form" />
     <h3>Notificaciones y Alertas que recibe:</h3>
     <div class="grid-3 gap-15" v-if="Object.keys(alertTypes) && Object.keys(alertTypes).length > 0">
         <InputCheckbox
@@ -57,6 +60,7 @@
 <script setup>
     import { reactive } from "@vue/reactivity";
     import { useRoute, useRouter } from 'vue-router'
+    import PermissionsList from '../../../components/PermissionsList.vue'
 
     const route = useRoute()
     const router = useRouter()
@@ -72,21 +76,7 @@
         },
     })
 
-    const permissions = reactive({})
-    let modal = awesomeModal.loading()
-    httpRequest({
-        url: window.public_path + '/api/permission',
-        method: 'POST',
-    })
-    .then((data) => {
-        Object.assign(permissions, data)
-        modal.close()
-    })
-    .catch((error) => {
-        modal.close()
-    })
     const alertTypes = {}
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

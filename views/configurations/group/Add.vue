@@ -59,7 +59,7 @@
     <form @submit.prevent="onSubmit">
         <SectionHeader>
             <template #title>
-                Añadir un Permiso
+                Añadir un Rol/Grupo
             </template>
             <template #buttons>
                 <router-link
