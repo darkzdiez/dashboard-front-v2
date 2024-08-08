@@ -186,4 +186,11 @@
             }
         }
     }
+
+    label[class*="input--small"] {
+        input {
+            height: 33px;
+            padding: 0 15px;
+        }
+    }
 </style>

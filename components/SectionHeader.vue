@@ -15,7 +15,7 @@
         justify-content: space-between;
         align-items: flex-start;
         margin-bottom: 20px;
-        flex-direction: column;
+        flex-direction: row;
         &__title {
             font-weight: 600;
             font-size: 32px;
@@ -23,6 +23,7 @@
             color: #000000;
             padding: 0;
             margin: 0;
+            white-space: nowrap;
             // text-transform: uppercase;
         }
         &__buttons {

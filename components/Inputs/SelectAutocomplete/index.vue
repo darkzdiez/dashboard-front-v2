@@ -496,4 +496,16 @@ watch(() => props.chainedTo, (value) => {
             }
         }
     }
+
+    .input--small {
+        .select-autocomplete {
+            &__button {
+                height: 33px;
+                &--multiple {
+                    min-height: 33px;
+                    padding: 5px 20px;
+                }
+            }
+        }
+    }
 </style>

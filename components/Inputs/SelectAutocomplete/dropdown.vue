@@ -196,4 +196,11 @@ const previousFocus = (e) => {
         }
     }
 }
+.input--small {
+    .select-autocomplete {
+        &__dropdown {
+            top: 31px;
+        }
+    }
+}
 </style>

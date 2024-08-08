@@ -86,4 +86,19 @@ defineEmits(['update:modelValue'])
             }
         }
     }
+
+    label[class*="input--small"] {
+        span {
+            white-space: nowrap;
+            font-size: 12px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 0;
+        }
+        input, .input-text {
+            height: 33px;
+            overflow: hidden;
+            font-size: 12px;
+        }
+    }
 </style>
