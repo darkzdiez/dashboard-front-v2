@@ -1,101 +1,105 @@
 <script setup>
-    import { reactive, ref, watch } from 'vue'
-    import { useRoute, useRouter } from 'vue-router'
-    import AddNoteComponent from './AddNote.vue'
+import { reactive, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import AddNoteComponent from './AddNote.vue';
 
-    const route = useRoute()
-    const router = useRouter()
+const route = useRoute();
+const router = useRouter();
 
-    const props = defineProps({
-        area: {
-            type: String,
-            required: true,
-        },
-        refid: {
-            type: [String, Number],
-            required: true,
-        }
+const props = defineProps({
+    area: {
+        type: String,
+        required: true,
+    },
+    refid: {
+        type: [String, Number],
+        required: true,
+    },
+});
+
+const notes = reactive([]);
+
+const getData = () => {
+    let modal = awesomeModal.loading();
+    httpRequest({
+        url:
+            window.public_path + '/api/notes/' + props.area + '/' + props.refid,
+        method: 'GET',
     })
-
-    const notes = reactive([])
-
-    const getData = () => {
-        let modal = awesomeModal.loading()
-        httpRequest({
-            url: window.public_path + '/api/notes/' + props.area + '/' + props.refid,
-            method: 'GET',
-        })
         .then((data) => {
             // limpiar el array
-            notes.splice(0, notes.length)
+            notes.splice(0, notes.length);
             // agregar los nuevos datos
-            notes.push(...data)
-            modal.close()
+            notes.push(...data);
+            modal.close();
         })
         .catch((error) => {
-            modal.close()
-        })
-    }
-    getData()
+            modal.close();
+        });
+};
+getData();
 
-    watch(() => props.refid, (newValue, oldValue) => {
-        getData()
-    })
-    const addNote = () => {
-        const modal = awesomeModal.open({
-            type: 'component',
-            component: AddNoteComponent,
-            area: props.area,
-            refid: props.refid,
-            title: 'Agregar nota',
-            useInputTitle: true,
-            typeNote: 'note',
-        })
-        modal.promise.then((data) => {
-            console.log('Dio bien')
-            getData()
-        })
-        modal.promise.catch((error) => {
-            console.log('Dio error')
-            getData()
-        })
+watch(
+    () => props.refid,
+    (newValue, oldValue) => {
+        getData();
     }
+);
+const addNote = () => {
+    const modal = awesomeModal.open({
+        type: 'component',
+        component: AddNoteComponent,
+        area: props.area,
+        refid: props.refid,
+        title: 'Agregar nota',
+        useInputTitle: true,
+        typeNote: 'note',
+    });
+    modal.promise.then((data) => {
+        console.log('Dio bien');
+        getData();
+    });
+    modal.promise.catch((error) => {
+        console.log('Dio error');
+        getData();
+    });
+};
 
-    const deleteNote = (id) => {
-        if (confirm('¿Está seguro de eliminar este registro?')) {
-            httpRequest({
-                url: window.public_path + '/api/notes/' + id + '/delete',
-                method: 'POST'
-            })
+const deleteNote = (id) => {
+    if (confirm('¿Está seguro de eliminar este registro?')) {
+        httpRequest({
+            url: window.public_path + '/api/notes/' + id + '/delete',
+            method: 'POST',
+        })
             .then((data) => {
-                getData()
+                getData();
             })
-            .catch((error) => {})
-        }
+            .catch((error) => {});
     }
+};
 
-    const showNote = (id) => {
-        const modal = awesomeModal.open({
-            type: 'component',
-            component: AddNoteComponent,
-            area: props.area,
-            refid: props.refid,
-            id: id,
-            title: 'Nota',
-            useInputTitle: true,
-            typeNote: 'note',
-        })
-        modal.promise.then((data) => {
-            console.log('Dio bien')
-            getData()
-        })
-        modal.promise.catch((error) => {
-            console.log('Dio error')
-            getData()
-        })
-    }
+const showNote = (id) => {
+    const modal = awesomeModal.open({
+        type: 'component',
+        component: AddNoteComponent,
+        area: props.area,
+        refid: props.refid,
+        id: id,
+        title: 'Nota',
+        useInputTitle: true,
+        typeNote: 'note',
+    });
+    modal.promise.then((data) => {
+        console.log('Dio bien');
+        getData();
+    });
+    modal.promise.catch((error) => {
+        console.log('Dio error');
+        getData();
+    });
+};
 
-    /*
+/*
     httpRequest({
         url: window.public_path + '/api/tipo-de-contribuyente/list-select',
         method: 'POST',
@@ -146,11 +150,15 @@
             </div>
         </div>
         <div class="grid-1 gap-15">
-            <table class="table table--small col-1">
+            <table class="table--small col-1 table">
                 <tbody>
                     <tr v-for="note in notes">
-                        <td><small>{{ note?.user?.name }}:</small> {{ note.title }} <small>- {{ note.created_at_human }}</small></td>
-                        <td style="width: 0; padding: 3px 0;">
+                        <td>
+                            <small>{{ note?.user?.name }}:</small>
+                            {{ note.title }}
+                            <small>- {{ note.created_at_human }}</small>
+                        </td>
+                        <td style="width: 0; padding: 3px 0">
                             <div class="table__btns">
                                 <button
                                     class="btn btn--ligthgray"
@@ -174,7 +182,6 @@
         </div>
     </form>
 </template>
-
 
 <style lang="scss" scoped>
 form {

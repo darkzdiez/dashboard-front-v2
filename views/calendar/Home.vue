@@ -1,18 +1,37 @@
 <template>
     <div class="grid-1">
         <div class="col-12 justify-content-center" v-if="loaded == 0">
-            <h3><center><i class="fas fa-sync fa-spin"></i><br>Cargando</center></h3>
+            <h3>
+                <center>
+                    <i class="fas fa-sync fa-spin"></i><br />Cargando
+                </center>
+            </h3>
         </div>
         <div class="col-12 justify-content-center" v-if="loaded == 2">
-            <h3><center><i class="fas fa-sync fa-spin"></i><br>Guardando</center></h3>
+            <h3>
+                <center>
+                    <i class="fas fa-sync fa-spin"></i><br />Guardando
+                </center>
+            </h3>
         </div>
         <div class="col-1" v-if="loaded == 1">
             <div class="calendar__controls">
-                <button class="calendar__control me-auto" @click="goToday"><i class="fas fa-calendar-day"></i> Hoy</button>
-                <button class="calendar__control" @click="goTo(calendar.prev)"><i class="fas fa-angle-double-left"></i></button>
+                <button class="calendar__control me-auto" @click="goToday">
+                    <i class="fas fa-calendar-day"></i> Hoy
+                </button>
+                <button class="calendar__control" @click="goTo(calendar.prev)">
+                    <i class="fas fa-angle-double-left"></i>
+                </button>
                 <div class="calendar__title">{{ calendar.title }}</div>
-                <button class="calendar__control" @click="goTo(calendar.next)"><i class="fas fa-angle-double-right"></i></button>
-                <button class="calendar__control ms-auto" @click="updateCalendar"><i class="fas fa-sync"></i> Actualizar</button>
+                <button class="calendar__control" @click="goTo(calendar.next)">
+                    <i class="fas fa-angle-double-right"></i>
+                </button>
+                <button
+                    class="calendar__control ms-auto"
+                    @click="updateCalendar"
+                >
+                    <i class="fas fa-sync"></i> Actualizar
+                </button>
             </div>
             <table class="calendar__table">
                 <thead>
@@ -30,47 +49,138 @@
                     <tr v-for="week in calendar.weeks">
                         <template v-for="(day, dayKey) in week.days">
                             <td v-if="day && day.available" class="p-0">
-                                <div class="calendar__week-events" v-if="dayKey == 0">
+                                <div
+                                    class="calendar__week-events"
+                                    v-if="dayKey == 0"
+                                >
                                     <div
                                         v-for="(event, eventKey) in week.events"
                                         class="calendar__week-event"
-                                        :style="'top: ' + ((40 * eventKey)+70) + 'px; left: calc(' + (100 * event.start) + '% + ' + (1 * event.start) + 'px); width: calc(' + (100 * event.size) + '% + ' + (1 * event.size) + 'px); background: ' + event.bgColor + '; padding: 6px 16px; color: ' + event.textColor + ';'"
+                                        :style="
+                                            'top: ' +
+                                            (40 * eventKey + 70) +
+                                            'px; left: calc(' +
+                                            100 * event.start +
+                                            '% + ' +
+                                            1 * event.start +
+                                            'px); width: calc(' +
+                                            100 * event.size +
+                                            '% + ' +
+                                            1 * event.size +
+                                            'px); background: ' +
+                                            event.bgColor +
+                                            '; padding: 6px 16px; color: ' +
+                                            event.textColor +
+                                            ';'
+                                        "
                                     >
-                                        <div class="calendar__week-event-title">{{ event.title }}</div>
+                                        <div class="calendar__week-event-title">
+                                            {{ event.title }}
+                                        </div>
                                     </div>
                                 </div>
-                                <router-link :to="'/calendario/'+day.date+'/day'" class="calendar__day" :class="{ 'calendar__day--today': day.today }">
-                                    <div class="calendar__day-short">{{ day.day_short }}</div>
-                                    <div class="calendar__day-number">{{ day.day }}</div>
-                                    <div v-if="day.dia_info" class="calendar__day-info">
+                                <router-link
+                                    :to="'/calendario/' + day.date + '/day'"
+                                    class="calendar__day"
+                                    :class="{
+                                        'calendar__day--today': day.today,
+                                    }"
+                                >
+                                    <div class="calendar__day-short">
+                                        {{ day.day_short }}
                                     </div>
+                                    <div class="calendar__day-number">
+                                        {{ day.day }}
+                                    </div>
+                                    <div
+                                        v-if="day.dia_info"
+                                        class="calendar__day-info"
+                                    ></div>
                                 </router-link>
                             </td>
-                            <td v-else-if="day && !day.available" style="opacity: .3" class="p-0">
-                                <div class="calendar__week-events" v-if="dayKey == 0">
+                            <td
+                                v-else-if="day && !day.available"
+                                style="opacity: 0.3"
+                                class="p-0"
+                            >
+                                <div
+                                    class="calendar__week-events"
+                                    v-if="dayKey == 0"
+                                >
                                     <div
                                         v-for="(event, eventKey) in week.events"
                                         class="calendar__week-event"
-                                        :style="'top: ' + ((40 * eventKey)+70) + 'px; left: calc(' + (100 * event.start) + '% + ' + (1 * event.start) + 'px); width: calc(' + (100 * event.size) + '% + ' + (1 * event.size) + 'px); background: ' + event.bgColor + '; padding: 6px 16px; color: ' + event.textColor + ';'"
+                                        :style="
+                                            'top: ' +
+                                            (40 * eventKey + 70) +
+                                            'px; left: calc(' +
+                                            100 * event.start +
+                                            '% + ' +
+                                            1 * event.start +
+                                            'px); width: calc(' +
+                                            100 * event.size +
+                                            '% + ' +
+                                            1 * event.size +
+                                            'px); background: ' +
+                                            event.bgColor +
+                                            '; padding: 6px 16px; color: ' +
+                                            event.textColor +
+                                            ';'
+                                        "
                                     >
-                                        <div class="calendar__week-event-title">{{ event.title }}</div>
+                                        <div class="calendar__week-event-title">
+                                            {{ event.title }}
+                                        </div>
                                     </div>
                                 </div>
-                                <router-link :to="'/calendario/'+day.date+'/day'" class="calendar__day" :class="{ 'calendar__day--today': day.today }">
-                                    <div class="calendar__day-short">{{ day.day_short }}</div>
-                                    <div class="calendar__day-number">{{ day.day }}</div>
-                                    <div v-if="day.dia_info" class="calendar__day-info">
+                                <router-link
+                                    :to="'/calendario/' + day.date + '/day'"
+                                    class="calendar__day"
+                                    :class="{
+                                        'calendar__day--today': day.today,
+                                    }"
+                                >
+                                    <div class="calendar__day-short">
+                                        {{ day.day_short }}
                                     </div>
+                                    <div class="calendar__day-number">
+                                        {{ day.day }}
+                                    </div>
+                                    <div
+                                        v-if="day.dia_info"
+                                        class="calendar__day-info"
+                                    ></div>
                                 </router-link>
                             </td>
                             <td v-else="day" class="p-0">
-                                <div class="calendar__week-events" v-if="dayKey == 0">
+                                <div
+                                    class="calendar__week-events"
+                                    v-if="dayKey == 0"
+                                >
                                     <div
                                         v-for="(event, eventKey) in week.events"
                                         class="calendar__week-event"
-                                        :style="'top: ' + ((40 * eventKey)+70) + 'px; left: calc(' + (100 * event.start) + '% + ' + (1 * event.start) + 'px); width: calc(' + (100 * event.size) + '% + ' + (1 * event.size) + 'px); background: ' + event.bgColor + '; padding: 6px 16px; color: ' + event.textColor + ';'"
+                                        :style="
+                                            'top: ' +
+                                            (40 * eventKey + 70) +
+                                            'px; left: calc(' +
+                                            100 * event.start +
+                                            '% + ' +
+                                            1 * event.start +
+                                            'px); width: calc(' +
+                                            100 * event.size +
+                                            '% + ' +
+                                            1 * event.size +
+                                            'px); background: ' +
+                                            event.bgColor +
+                                            '; padding: 6px 16px; color: ' +
+                                            event.textColor +
+                                            ';'
+                                        "
                                     >
-                                        <div class="calendar__week-event-title">{{ event.title }}</div>
+                                        <div class="calendar__week-event-title">
+                                            {{ event.title }}
+                                        </div>
                                     </div>
                                 </div>
                             </td>
@@ -83,75 +193,71 @@
 </template>
 
 <script setup>
-    import { reactive, ref } from 'vue'
-    import { useRoute, useRouter } from 'vue-router'
+import { reactive, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
-    const route = useRoute()
-    const router = useRouter()
-    
-    const calendar = reactive({})
-    const loaded = ref(0)
+const route = useRoute();
+const router = useRouter();
 
-    const openDay = (day) => {
-        router.push({ name: 'calendar.day', params: { date: day.date } })
+const calendar = reactive({});
+const loaded = ref(0);
+
+const openDay = (day) => {
+    router.push({ name: 'calendar.day', params: { date: day.date } });
+};
+
+const lastTarget = ref(null);
+
+const goTo = (target = null) => {
+    let modal = awesomeModal.loading();
+    loaded.value = 0;
+    lastTarget.value = target;
+    let params = '';
+    if (target) {
+        router.push({ query: { date: target } });
+        params = '?ym=' + target;
     }
-
-    const lastTarget = ref(null)
-
-    const goTo = (target = null) => {
-
-        let modal = awesomeModal.loading()
-        loaded.value = 0
-        lastTarget.value = target
-        let params = ''
-        if ( target ) {
-            router.push({ query: { date: target } })
-            params = '?ym=' + target
-        } 
-        httpRequest({
-            url: window.public_path + '/api/calendar' + params,
-            method: 'GET',
-        })
+    httpRequest({
+        url: window.public_path + '/api/calendar' + params,
+        method: 'GET',
+    })
         .then((data) => {
-            Object.assign(calendar, data)
-            loaded.value = 1
-            modal.close()
+            Object.assign(calendar, data);
+            loaded.value = 1;
+            modal.close();
         })
         .catch((error) => {
-            loaded.value = 1
-            modal.close()
-        })
+            loaded.value = 1;
+            modal.close();
+        });
+};
 
+const updateCalendar = () => {
+    if (lastTarget.value) {
+        goTo(lastTarget.value);
+    } else {
+        loadCalendar();
     }
+};
 
-    const updateCalendar = () => {
-        if (lastTarget.value) {
-            goTo(lastTarget.value)
-        } else {
-            loadCalendar()
-        }
+const goToday = () => {
+    lastTarget.value = null;
+    loadCalendar();
+};
 
+const loadCalendar = () => {
+    // let modal = awesomeModal.loading()
+    // modal.close()
+
+    if (route.query.date) {
+        goTo(route.query.date);
+        return;
     }
+    goTo();
+    return;
+};
 
-    const goToday = () => {
-        lastTarget.value = null
-        loadCalendar()
-    }
-
-    const loadCalendar = () => {
-        // let modal = awesomeModal.loading()
-        // modal.close()
-
-        if ( route.query.date ) {
-            goTo(route.query.date)
-            return
-        }
-        goTo()
-        return
-    }
-
-    loadCalendar()
-
+loadCalendar();
 </script>
 
 <style lang="scss" scoped>
@@ -162,10 +268,10 @@
         width: 100%;
         margin-bottom: 5px;
         tr {
-            border-bottom: 1px solid #D8D8D8;
+            border-bottom: 1px solid #d8d8d8;
         }
         td {
-            border-right: 1px solid #D8D8D8;
+            border-right: 1px solid #d8d8d8;
             padding: 0;
             vertical-align: top;
         }
@@ -211,7 +317,7 @@
         font-weight: 500;
         font-size: 18px;
         line-height: 22px;
-        color: #0C0C0C;
+        color: #0c0c0c;
         text-transform: uppercase;
     }
     &__control {
@@ -239,6 +345,5 @@
     font-size: 13px;
 }
 .calendar__week-event-title {
-
 }
 </style>

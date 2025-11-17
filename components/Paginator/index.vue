@@ -2,20 +2,20 @@
     <!-- Paginator -->
     <div class="paginator">
         <div class="paginator__info">
-            Mostrando
-            <strong>
-                {{ paginator.from }}
-            </strong>
-            a
-            <strong>
-                {{ paginator.to }}
-            </strong>
-            de
-            <strong>
-                {{ paginator.total }}
-            </strong>
-            registros,
-            se muestran <strong>{{ paginator.per_page }}</strong> por página.
+            {{ getTextByLocale({ es: 'Mostrando', en: 'Showing' }) }}
+            <strong>{{ paginator.from }}</strong>
+            {{ getTextByLocale({ es: 'a', en: 'to' }) }}
+            <strong>{{ paginator.to }}</strong>
+            {{ getTextByLocale({ es: 'de', en: 'of' }) }}
+            <strong>{{ paginator.total }}</strong>
+            {{
+                getTextByLocale({
+                    es: 'registros, se muestran',
+                    en: 'records, displaying',
+                })
+            }}
+            <strong>{{ paginator.per_page }}</strong>
+            {{ getTextByLocale({ es: 'por página.', en: 'per page.' }) }}
         </div>
         <div class="paginator__buttons">
             <button
@@ -24,20 +24,19 @@
                 :disabled="link.active"
                 @click="$emit('change', link.url)"
                 v-html="link.label"
-            >
-            </button>
+            ></button>
         </div>
     </div>
 </template>
 <script setup>
-import { defineProps } from 'vue'
+import { defineProps } from 'vue';
 
 defineProps({
     paginator: {
         type: Object,
-        required: true
-    }
-})
+        required: true,
+    },
+});
 </script>
 
 <style lang="scss" scoped>
@@ -79,7 +78,6 @@ defineProps({
                     background-color: transparent;
                 }
             }
-        
         }
     }
 }

@@ -1,8 +1,10 @@
 <template>
-    <div class="container modal">
+    <div class="modal container">
         <div class="modal__header">
             <h1 class="controls__title">{{ props.data.rawData.title }}</h1>
-            <div class="modal__close" @click="close"><i class="fas fa-times"></i></div>
+            <div class="modal__close" @click="close">
+                <i class="fas fa-times"></i>
+            </div>
         </div>
         <div class="modal__body grid-4 gap-15">
             <!--
@@ -57,29 +59,28 @@
 </template>
 
 <script setup>
-    import { reactive, ref } from 'vue'
-    
-    const props = defineProps({
-        data: {
-            type: Object,
-            required: true,
-        }
-    })
-    const form = reactive({
-        id: null,
-        title: '',
-        content: '',
+import { reactive } from 'vue';
 
-    })
-    const errors = reactive({
-        title: [],
-        content: [],
-    })
+const props = defineProps({
+    data: {
+        type: Object,
+        required: true,
+    },
+});
+const form = reactive({
+    id: null,
+    title: '',
+    content: '',
+});
+const errors = reactive({
+    title: [],
+    content: [],
+});
 
-    const close = () => {
-        props.data.callback.reject('Close on overlay click')
-    }
-    /*
+const close = () => {
+    props.data.callback.reject('Close on overlay click');
+};
+/*
     const datosFacturacion = reactive([])
 
     httpRequest({
@@ -95,117 +96,121 @@
     .catch((error) => {})
     */
 
-    const onSubmit = () => {
-        let modal = awesomeModal.loading()
-        var form_data = new FormData();
-        if ( form.id ) {
-            form_data.append("id", form.id);
-        } else {
-            form_data.append("level", 'info');
-            form_data.append("type", props.data.rawData.typeNote ); // note, alert
-        }
-        if ( props.data.rawData.useInputTitle ) {
-            form_data.append("title", form.title);
-        }
-        form_data.append("content", form.content);
+const onSubmit = () => {
+    let modal = awesomeModal.loading();
+    var form_data = new FormData();
+    if (form.id) {
+        form_data.append('id', form.id);
+    } else {
+        form_data.append('level', 'info');
+        form_data.append('type', props.data.rawData.typeNote); // note, alert
+    }
+    if (props.data.rawData.useInputTitle) {
+        form_data.append('title', form.title);
+    }
+    form_data.append('content', form.content);
 
-        httpRequest({
-            url: window.public_path + '/api/notes/' + props.data.rawData.area + '/' + props.data.rawData.refid,
-            method: 'POST',
-            data: form_data,
-            errors: errors,
-        })
+    httpRequest({
+        url:
+            window.public_path +
+            '/api/notes/' +
+            props.data.rawData.area +
+            '/' +
+            props.data.rawData.refid,
+        method: 'POST',
+        data: form_data,
+        errors: errors,
+    })
         .then((data) => {
-            modal.close()
+            modal.close();
             close();
         })
         .catch((error) => {
-            modal.close()
-        })
-    }
-    const find = (id) => {
-        let modal = awesomeModal.loading()
-        httpRequest({
-            url: window.public_path + '/api/notes/' + id,
-            method: 'GET',
-        })
+            modal.close();
+        });
+};
+const find = (id) => {
+    let modal = awesomeModal.loading();
+    httpRequest({
+        url: window.public_path + '/api/notes/' + id,
+        method: 'GET',
+    })
         .then((data) => {
-            form.id = data.id
-            form.title = data.title
-            form.content = data.content
-            modal.close()
+            form.id = data.id;
+            form.title = data.title;
+            form.content = data.content;
+            modal.close();
         })
         .catch((error) => {
-            modal.close()
-        })
-    }
-    if ( props.data.rawData.id ) {
-        find(props.data.rawData.id)
-    }
+            modal.close();
+        });
+};
+if (props.data.rawData.id) {
+    find(props.data.rawData.id);
+}
 </script>
 
-
 <style lang="scss" scoped>
-    .modal {
-        background-color: #ffffff;
-        padding: 0;
-        // min-height: calc(100% - 30px);
-        margin-top: 15px;
-        margin-bottom: 15px;
+.modal {
+    background-color: #ffffff;
+    padding: 0;
+    // min-height: calc(100% - 30px);
+    margin-top: 15px;
+    margin-bottom: 15px;
 
-        max-height: calc(100vh - 30px);
-        overflow: auto;
-        &__header {
-            padding: 30px 24px 20px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        &__close {
-            cursor: pointer;
-            font-size: 25px;
-            transition: all 0.3s ease;
-            color: #656565;
-            &:hover {
-                color: #000;
-            }
-        }
-        &__body {
-            padding: 0 24px 42px 24px;
-        }
-        &__buttons {
-            display: flex;
-            gap: 15px;
-            margin-left: auto;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
+    max-height: calc(100vh - 30px);
+    overflow: auto;
+    &__header {
+        padding: 30px 24px 20px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    &__close {
+        cursor: pointer;
+        font-size: 25px;
+        transition: all 0.3s ease;
+        color: #656565;
+        &:hover {
+            color: #000;
         }
     }
-    .modal {
-        animation: loading .5s ease-in-out;
-        @keyframes loading {
-            0% {
-                transform: translate(0px, 1000px) scale(.3);
-            }
-            100% {
-                transform: translate(0px, 0px) scale(1);
-            }
+    &__body {
+        padding: 0 24px 42px 24px;
+    }
+    &__buttons {
+        display: flex;
+        gap: 15px;
+        margin-left: auto;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+    }
+}
+.modal {
+    animation: loading 0.5s ease-in-out;
+    @keyframes loading {
+        0% {
+            transform: translate(0px, 1000px) scale(0.3);
+        }
+        100% {
+            transform: translate(0px, 0px) scale(1);
         }
     }
-    .item {
-        &__label {
-            font-weight: 400;
-            font-size: 16px;
-            line-height: 19px;
-            color: #919191;
-            margin-bottom: 7.5px;
-        }
-        &__value {
-            font-weight: 500;
-            font-size: 16px;
-            line-height: 19px;
-            color: #0C0C0C;
-        }
+}
+.item {
+    &__label {
+        font-weight: 400;
+        font-size: 16px;
+        line-height: 19px;
+        color: #919191;
+        margin-bottom: 7.5px;
     }
+    &__value {
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 19px;
+        color: #0c0c0c;
+    }
+}
 </style>

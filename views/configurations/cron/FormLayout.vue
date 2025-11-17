@@ -1,4 +1,3 @@
-
 <template>
     <div class="grid-5 gap-15">
         <InputText
@@ -67,7 +66,6 @@
             :error="errors.day_of_week"
             class="col-1"
         />
-
     </div>
     <table class="mt-15" v-if="form.logs.length > 0">
         <thead>
@@ -80,34 +78,45 @@
         <tbody>
             <tr v-for="log in form.logs" :key="log.id">
                 <td>
-                    <i class="fas fa-circle" v-if="log.run_status == 'success'" style="color: green"></i>
-                    <i class="fas fa-circle" v-if="log.run_status == 'failure'" style="color: red"></i>
+                    <i
+                        class="fas fa-circle"
+                        v-if="log.run_status == 'success'"
+                        style="color: green"
+                    ></i>
+                    <i
+                        class="fas fa-circle"
+                        v-if="log.run_status == 'failure'"
+                        style="color: red"
+                    ></i>
                 </td>
-                <td>{{ log.run_at_formatted }}<br> {{ log.run_at_human }}</td>
-                <td><pre>{{ log.output }}</pre></td>
+                <td>
+                    {{ log.run_at_formatted }}<br />
+                    {{ log.run_at_human }}
+                </td>
+                <td>
+                    <pre>{{ log.output }}</pre>
+                </td>
             </tr>
         </tbody>
     </table>
 </template>
 
 <script setup>
-    import { reactive } from "@vue/reactivity";
-    import { useRoute, useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router';
 
-    const route = useRoute()
-    const router = useRouter()
+const route = useRoute();
+const router = useRouter();
 
-    defineProps({
-        form: {
-            type: Object,
-            required: true,
-        },
-        errors: {
-            type: Object,
-            required: true,
-        },
-    })
+defineProps({
+    form: {
+        type: Object,
+        required: true,
+    },
+    errors: {
+        type: Object,
+        required: true,
+    },
+});
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

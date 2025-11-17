@@ -1,7 +1,7 @@
-import Layout from './Layout.vue'
-import Home   from './Home.vue'
-import Add    from './Add.vue'
-import Edit   from './Edit.vue'
+import Add from './Add.vue';
+import Edit from './Edit.vue';
+import Home from './Home.vue';
+import Layout from './Layout.vue';
 
 export const routes = {
     path: '/user',
@@ -12,21 +12,21 @@ export const routes = {
     children: [
         {
             path: '',
-            component: Home
+            component: Home,
         },
         {
             path: 'add',
             component: Add,
             meta: {
-                displayName: 'Agregar'
-            }
+                displayName: 'Agregar',
+            },
         },
         {
             path: ':id/edit',
-            component:Edit,
+            component: Edit,
             meta: {
-                displayName: 'Editar'
-            }
-        }
-    ]
-}
+                displayName: 'Editar',
+            },
+        },
+    ],
+};

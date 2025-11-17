@@ -1,13 +1,21 @@
-
 <template>
     <div class="grid-2 gap-15">
-        <InputText
-            label="Nombre"
-            placeholder=""
-            v-model="form.name"
-            :error="errors.name"
-            class="col-1"
-        />
+        <div class="d-flex col-1 align-items-end gap-10">
+            <InputText
+                label="Nombre/Slug"
+                placeholder=""
+                v-model="form.name"
+                :error="errors.name"
+                class="w-full flex-grow-1"
+            />
+            <button
+                class="btn btn--darkgray"
+                @click="slugifyName"
+                type="button"
+            >
+                Generar Slug
+            </button>
+        </div>
         <InputText
             label="Grupo"
             placeholder=""
@@ -33,17 +41,23 @@
 </template>
 
 <script setup>
-    defineProps({
-        form: {
-            type: Object,
-            required: true,
-        },
-        errors: {
-            type: Object,
-            required: true,
-        },
-    })
+const props = defineProps({
+    form: {
+        type: Object,
+        required: true,
+    },
+    errors: {
+        type: Object,
+        required: true,
+    },
+});
+
+const slugifyName = () => {
+    props.form.name = props.form.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
+};
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

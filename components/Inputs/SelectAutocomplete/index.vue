@@ -6,10 +6,21 @@
                 class="select-autocomplete__button"
                 @click="click"
                 type="button"
-                :class="{'select-autocomplete__button--multiple': multiple}"
+                :class="{ 'select-autocomplete__button--multiple': multiple }"
             >
                 <div v-if="multiple" class="select-autocomplete__multiple">
-                    <span v-for="(item, index) in state.selected" class="select-autocomplete__multiple-item">
+                    <slot name="prepend"></slot>
+                    <span
+                        v-for="(item, index) in state.selected"
+                        class="select-autocomplete__multiple-item"
+                        :key="index"
+                    >
+                        <template v-if="$slots.selected">
+                            <slot name="selected" v-bind="item"></slot>
+                        </template>
+                        <template v-else>
+                            <slot name="option" v-bind="item"></slot>
+                        </template>
                         <button
                             type="button"
                             class="select-autocomplete__multiple-remove"
@@ -17,14 +28,21 @@
                         >
                             <i class="fas fa-times"></i>
                         </button>
-                        <slot v-bind="item" name="option"></slot>
                     </span>
                 </div>
-                <span class="select-autocomplete__text" v-else-if="state.selected">
+                <span
+                    class="select-autocomplete__text"
+                    v-else-if="state.selected"
+                >
                     <slot v-bind="state.selected" name="option"></slot>
                 </span>
-                <span class="select-autocomplete__text" v-else>Seleccionar</span>
-                <i class="fas fa-angle-down" style="margin-left: auto;"></i>
+                <span
+                    class="select-autocomplete__text"
+                    style="color: #898989"
+                    v-else
+                    >{{ placeholder }}</span
+                >
+                <i class="fas fa-angle-down" style="margin-left: auto"></i>
             </button>
             <template v-if="displayOptions">
                 <Dropdown
@@ -44,9 +62,9 @@
 </template>
 
 <script setup>
-import { reactive, ref, watch, onMounted, useSlots } from 'vue'
-import Dropdown from './dropdown.vue'
-import ModalOptions from './modal.vue'
+import { onMounted, reactive, ref, useSlots, watch } from 'vue';
+import Dropdown from './dropdown.vue';
+import ModalOptions from './modal.vue';
 const props = defineProps({
     label: {
         type: String,
@@ -55,6 +73,7 @@ const props = defineProps({
     placeholder: {
         type: String,
         required: false,
+        default: 'Seleccionar',
     },
     modelValue: {
         type: [Object, String, Number, Boolean, Array],
@@ -93,7 +112,7 @@ const props = defineProps({
         default: null,
     },
     itemConditional: {
-        type: [ Function ],
+        type: [Function],
         required: false,
         default: null,
     },
@@ -112,21 +131,21 @@ const props = defineProps({
         required: false,
         default: false,
     },
-})
+});
 
-const slots = useSlots()
+const slots = useSlots();
 window.SelectAutocomplete = {
-    slots: slots
-}
+    slots: slots,
+};
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue']);
 
-const displayOptions = ref(false)
+const displayOptions = ref(false);
 const paginator = reactive({
-    data: []
-})
+    data: [],
+});
 
-const rootElement = ref(null)
+const rootElement = ref(null);
 const state = reactive({
     state: 'ready',
     options: [],
@@ -152,60 +171,75 @@ const state = reactive({
             */
         }
         if (this.selectedRaw) {
-            Object.assign(this.selectedRaw, option)
+            Object.assign(this.selectedRaw, option);
         }
         // emit('update:selectedRaw', option)
         // console.log(option)
         window.preventScrollWithArrow = false;
         displayOptions.value = false;
-        if ( option != null ) {
-            if ( !props.multiple ) {
+        if (option != null) {
+            if (!props.multiple) {
                 this.selected = option;
-                emit('update:modelValue', option[this.optionKey])
-                return
-            }
-            if ( Object.prototype.toString.call(this.selected) != '[object Array]' ) { // si no existe el array, lo creo
-                this.selected = []
+                emit('update:modelValue', option[this.optionKey]);
+                return;
             }
             if (
-                this.selected.find((item) => item[this.optionKey] == option[this.optionKey])
-            ) { // si existe, lo elimino
-                this.selected = this.selected.filter((item) => item[this.optionKey] != option[this.optionKey])
-                props.modelValue.splice(props.modelValue.indexOf(option[this.optionKey]), 1)
+                Object.prototype.toString.call(this.selected) !=
+                '[object Array]'
+            ) {
+                // si no existe el array, lo creo
+                this.selected = [];
+            }
+            if (
+                this.selected.find(
+                    (item) => item[this.optionKey] == option[this.optionKey]
+                )
+            ) {
+                // si existe, lo elimino
+                this.selected = this.selected.filter(
+                    (item) => item[this.optionKey] != option[this.optionKey]
+                );
+                props.modelValue.splice(
+                    props.modelValue.indexOf(option[this.optionKey]),
+                    1
+                );
             } else {
-                this.selected.push(option)
+                this.selected.push(option);
                 // si props.modelValue es un array, lo agrego
-                if ( Object.prototype.toString.call(props.modelValue) == '[object Array]' ) {
-                    props.modelValue.push(option[this.optionKey])
+                if (
+                    Object.prototype.toString.call(props.modelValue) ==
+                    '[object Array]'
+                ) {
+                    props.modelValue.push(option[this.optionKey]);
                 } else {
                     // si props.modelValue no es un array, lo reemplazo
-                    emit('update:modelValue', [option[this.optionKey]])
+                    emit('update:modelValue', [option[this.optionKey]]);
                 }
             }
         } else {
             this.selected = null;
-            emit('update:modelValue', null)
+            emit('update:modelValue', null);
         }
-        console.log(this.selected)
+        console.log(this.selected);
         // this.$forceUpdate();
     },
     remove: function (option) {
         // detecto la posicion del elemento
-        let index = this.selected.indexOf(option)
+        let index = this.selected.indexOf(option);
         // elimino el elemento
-        this.selected.splice(index, 1)
-        props.modelValue.splice(index, 1)
+        this.selected.splice(index, 1);
+        props.modelValue.splice(index, 1);
     },
     submit: (e) => {
-        e.preventDefault()
+        e.preventDefault();
         e.stopPropagation();
-        if ( !props.endpoint && props.options ) {
-            filterOptions()
-            return
+        if (!props.endpoint && props.options) {
+            filterOptions();
+            return;
         }
-        syncData()
-    }
-})
+        syncData();
+    },
+});
 document.addEventListener('click', (e) => {
     // console.log(e.target, this.$el)
     // this.$el ya no se puede utilizar en vue 3 en su lugar
@@ -216,53 +250,68 @@ document.addEventListener('click', (e) => {
     displayOptions.value = false;
 });
 // this.state = 'ready'
-window.addEventListener('keydown', (e) => {
-    // console.log(e.which, e.code, e.key);
-    if ( ["Escape"].includes( e.code ) ) {
-        displayOptions.value = false;
-        window.preventScrollWithArrow = displayOptions.value
-        // this.$forceUpdate();
-    }
-}, false)
+window.addEventListener(
+    'keydown',
+    (e) => {
+        // console.log(e.which, e.code, e.key);
+        if (['Escape'].includes(e.code)) {
+            displayOptions.value = false;
+            window.preventScrollWithArrow = displayOptions.value;
+            // this.$forceUpdate();
+        }
+    },
+    false
+);
 
 const filterOptions = () => {
-    if ( !props.options ) {
-        return
+    if (!props.options) {
+        return;
     }
-    if ( !props.options.length ) {
-        return
+    if (!props.options.length) {
+        return;
     }
     // filtrar el array de options con el valor de state.search y asignarlo a paginator.data
     let filtered = props.options.filter((option) => {
-        let found = false
+        let found = false;
         Object.keys(option).forEach((key) => {
-            if ( Object.prototype.toString.call(option[key]) == '[object String]' ) {
-                if ( option[key].toLowerCase().includes(state.search.toLowerCase()) ) {
-                    found = true
+            if (
+                Object.prototype.toString.call(option[key]) == '[object String]'
+            ) {
+                if (
+                    option[key]
+                        .toLowerCase()
+                        .includes(state.search.toLowerCase())
+                ) {
+                    found = true;
                 }
             }
-        })
-        return found
-    })
+        });
+        return found;
+    });
     // limpiar paginator.data
-    paginator.data.splice(0, paginator.data.length)
+    paginator.data.splice(0, paginator.data.length);
     // asignar filtered a paginator.data
-    paginator.data.push(...filtered)
-}
+    paginator.data.push(...filtered);
+};
 
 const syncData = () => {
     // let modal = awesomeModal.loading()
-    if ( !props.endpoint && props.options.length ) {
-        paginator.data.push(...props.options)
-        return
+    try {
+        if (!props.endpoint && props.options.length) {
+            paginator.data.push(...props.options);
+            return;
+        }
+    } catch (error) {
+        console.error('Error al sincronizar los datos:', error);
+        return;
     }
-    if ( !props.endpoint ) {
-        console.error('No se ha definido el endpoint')
-        return
+    if (!props.endpoint) {
+        console.error('No se ha definido el endpoint');
+        return;
     }
-    let url = new URL(window.public_path + props.endpoint)
-    const form = new FormData()
-    form.append('search', state.search)
+    let url = new URL(window.public_path + props.endpoint);
+    const form = new FormData();
+    form.append('search', state.search);
     /*
     for (const [key, value] of Object.entries(appliedFilters)) {
         if (value) {
@@ -276,57 +325,55 @@ const syncData = () => {
         method: 'POST',
         body: form,
     })
-    .then(response => response.json())
-    .then(data => {
-        // console.clear()
-        // console.log('aqui vamos')
-        // chequear si es un array
-        if (
-            Object.prototype.toString.call(data) == '[object Array]'
-        ) {
-            // console.log('es un array')
-            paginator.data = data
-        }
+        .then((response) => response.json())
+        .then((data) => {
+            // console.clear()
+            // console.log('aqui vamos')
+            // chequear si es un array
+            if (Object.prototype.toString.call(data) == '[object Array]') {
+                // console.log('es un array')
+                paginator.data = data;
+            }
 
-        // chequear si es un objeto y no un array y si existe el metodo data.data data.next_page_url
-        if (
-            Object.prototype.toString.call(data) == '[object Object]'
-            && data.hasOwnProperty('data')
-            && data.hasOwnProperty('next_page_url')
-        ) {
-            // console.log('es un objeto')
-            Object.assign(paginator, data)
-        }
-        find(props.modelValue)
-        // modal.close()
-    })
-    .catch(error => {
-        // console.clear()
-        // console.log('Aqui ocurrio un error')
-        // console.log(error)
-        // modal.close()
-        // Código de estado: 401 Unauthorized
-        if (error.response.status == 401) {
-            console.log('acceso denegado')
-            router.push('/login')
-            return false
-        }
-        // Código de estado: 422 Unprocessable Content
-        if (error.response.status == 422) {
-            Object.assign(errors, error.response.data.errors)
-            return false
-        }
-    })
-}
+            // chequear si es un objeto y no un array y si existe el metodo data.data data.next_page_url
+            if (
+                Object.prototype.toString.call(data) == '[object Object]' &&
+                data.hasOwnProperty('data') &&
+                data.hasOwnProperty('next_page_url')
+            ) {
+                // console.log('es un objeto')
+                Object.assign(paginator, data);
+            }
+            find(props.modelValue);
+            // modal.close()
+        })
+        .catch((error) => {
+            // console.clear()
+            // console.log('Aqui ocurrio un error')
+            // console.log(error)
+            // modal.close()
+            // Código de estado: 401 Unauthorized
+            if (error.response.status == 401) {
+                console.log('acceso denegado');
+                router.push('/login');
+                return false;
+            }
+            // Código de estado: 422 Unprocessable Content
+            if (error.response.status == 422) {
+                Object.assign(errors, error.response.data.errors);
+                return false;
+            }
+        });
+};
 const refreshData = () => {
-    syncData()
-}
-syncData()
+    syncData();
+};
+syncData();
 
 const click = () => {
     if (!props.openIntoModal) {
         displayOptions.value = !displayOptions.value;
-        window.preventScrollWithArrow = displayOptions.value
+        window.preventScrollWithArrow = displayOptions.value;
         if (displayOptions.value) {
             setTimeout(() => {
                 state.inputSearch.focus();
@@ -343,37 +390,38 @@ const click = () => {
             state: state,
             itemConditional: props.itemConditional,
             allowNull: props.allowNull,
-            slots:slots
-        })
+            slots: slots,
+        });
     }
-}
-
-
+};
 
 const find = (optionKey) => {
-    if ( Object.prototype.toString.call(optionKey) === '[object Array]' ) { // si es un array
-        let selected = []
+    if (Object.prototype.toString.call(optionKey) === '[object Array]') {
+        // si es un array
+        let selected = [];
         optionKey.forEach((item) => {
             paginator.data.find((option) => {
                 if (option[props.optionKey] == item) {
-                    selected.push(option)
-                    return true
+                    selected.push(option);
+                    return true;
                 }
-            })
-        })
+            });
+        });
         // console.log(state.selected, selected)
-        if ( Object.prototype.toString.call(state.selected) === '[object Array]' ) {
-            Object.assign(state.selected, selected)
+        if (
+            Object.prototype.toString.call(state.selected) === '[object Array]'
+        ) {
+            Object.assign(state.selected, selected);
         } else {
-            state.selected = selected
+            state.selected = selected;
         }
     } else {
         paginator.data.find((option) => {
             if (option[props.optionKey] == optionKey) {
-                state.select(option)
-                return true
+                state.select(option);
+                return true;
             }
-        })
+        });
     }
     /*
     let url = new URL(window.public_path + props.endpoint)
@@ -404,108 +452,115 @@ const find = (optionKey) => {
         }
     })
     */
-}
+};
 onMounted(() => {
     // console.log('onMounted')
     if (props.modelValue) {
         // console.log('onMounted')
         // console.log(props.modelValue)
-        find(props.modelValue)
+        find(props.modelValue);
     }
-})
+});
 
-watch(() => props.modelValue, (value) => {
-    if ( props.modelValue ) {
-        find(value)
-    } else {
-        state.select(null)
+watch(
+    () => props.modelValue,
+    (value) => {
+        if (props.modelValue) {
+            find(value);
+        } else {
+            state.select(null);
+        }
     }
-})
+);
 
 // si chainedTo cambia, se debe limpiar state.search
 // y ejecutar syncData()
-watch(() => props.chainedTo, (value) => {
-    // console.log('chainedTo')
-    state.search = ''
-    syncData()
-})
-
+watch(
+    () => props.chainedTo,
+    (value) => {
+        // console.log('chainedTo')
+        state.search = '';
+        syncData();
+    }
+);
 </script>
 
-
-
 <style lang="scss" scoped>
-    .rootElement {
-        &>span {
-            font-weight: 500;
-            line-height: 19px;
-            color: #9A9A9A;
-            font-size: 14px;
-            margin-bottom: 9px;
-            display: block;
-        }
+.rootElement {
+    & > span {
+        font-weight: 500;
+        line-height: 19px;
+        color: #9a9a9a;
+        font-size: 14px;
+        margin-bottom: 6px;
+        display: block;
     }
-    .select-autocomplete {
-        position: relative;
-        //z-index: 1;
-        width: 100%;
+}
+.select-autocomplete {
+    position: relative;
+    //z-index: 1;
+    width: 100%;
+    max-width: 100%;
+    &__text {
+        white-space: nowrap;
+        overflow: hidden;
+        // max-width: calc(100% - 50px);
         max-width: 100%;
-        &__text {
-            white-space: nowrap;
-            overflow: hidden;
-            max-width: calc(100% - 50px);
-            // position: absolute;
-            text-overflow: ellipsis;
+        // position: absolute;
+        text-overflow: ellipsis;
+    }
+    &__button {
+        background: #ffffff;
+        border: 1px solid #c1c1c1;
+        border-radius: 4px;
+        width: 100%;
+        height: 48px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 2px;
+        &--multiple {
+            height: auto;
+            min-height: 48px;
+            padding: 5px 20px;
         }
-        &__button {
-            background: #FFFFFF;
-            border: 1px solid #C1C1C1;
+    }
+    &__multiple {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 5px;
+        &-item {
+            background-color: #f4f4f4;
             border-radius: 4px;
-            width: 100%;
-            height: 48px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 0 20px;
-            &--multiple {
-                height: auto;
-                min-height: 48px;
-                padding: 5px 20px;
-            }
+            // border: 1px solid #9d9d9d;
+            box-sizing: border-box;
+            padding-left: 5px;
+            color: #0c0c0c;
         }
-        &__multiple {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 5px;
-            &-item {
-                background-color: #F2F2F2;
-                border-radius: 4px;
-                display: flex;
-                align-items: center;
-                border: 1px solid #9d9d9d;
-                box-sizing: border-box;
-                padding-right: 5px;
-            }
-            &-remove {
-                border: none;
-                border-right: 1px solid #9d9d9d;
-                padding: 5px 9px;
-                cursor: pointer;
-                margin-right: 5px;
-            }
+        &-remove {
+            border: none;
+            // border-left: 1px solid #9d9d9d;
+            padding: 5px 9px;
+            cursor: pointer;
+            margin-left: 0px;
+            color: #0c0c0c;
         }
     }
+}
 
-    .input--small {
-        .select-autocomplete {
-            &__button {
-                height: 33px;
-                &--multiple {
-                    min-height: 33px;
-                    padding: 5px 20px;
-                }
+.input--small {
+    .select-autocomplete {
+        &__button {
+            height: 33px;
+            &--multiple {
+                min-height: 33px;
+                padding: 5px 20px;
+                height: auto;
             }
         }
     }
+}
 </style>

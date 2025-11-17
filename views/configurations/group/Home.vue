@@ -1,32 +1,21 @@
 <template>
     <SectionHeader>
         <template #title>
-            Roles/Grupos
+            <button
+                @click="$goBack('/configurations')"
+                class="btn-back"
+                type="button"
+            >
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <span>Roles/Grupos</span>
         </template>
         <template #buttons>
-            <router-link
-                class="btn btn--yellow"
-                to="/configurations"
-            >
-                <i class="fas fa-arrow-left"></i> Volver
-            </router-link>
-            <button
-                class="btn btn--gray-outline"
-                @click="layout = 'list'"
-            >
+            <button class="btn btn--gray-outline" @click="layout = 'list'">
                 <i class="fas fa-list"></i> Ver Lista
             </button>
-            <button
-                class="btn btn--gray-outline"
-                @click="layout = 'tree'"
-            >
+            <button class="btn btn--gray-outline" @click="layout = 'tree'">
                 <i class="fas fa-sitemap"></i> Ver Árbol
-            </button>
-            <button
-                class="btn btn--gray"
-                @click="pagination.syncData()"
-            >
-                <i class="fas fa-sync-alt"></i> Actualizar
             </button>
             <button
                 class="btn btn--darkgray-outline"
@@ -44,10 +33,7 @@
                 Salir de la Papelera
             </button>
 
-            <router-link
-                to="/group/add"
-                class="btn btn--green"
-            >
+            <router-link to="/group/add" class="btn btn--primary">
                 <i class="fas fa-plus"></i> Añadir
             </router-link>
         </template>
@@ -67,18 +53,44 @@
             </thead>
             <tbody>
                 <tr class="table__search">
-                    <td><i class="fas fa-search-minus table__icon-search"></i></td>
-                    <td><input type="text" v-model="pagination.filters.name" @keyup.enter="pagination.applyFilters" /></td>
-                    <td><input type="text" v-model="pagination.filters.guard_name" @keyup.enter="pagination.applyFilters" /></td>
-                    <td><input type="text" v-model="pagination.filters.description" @keyup.enter="pagination.applyFilters" /></td>
+                    <td>
+                        <i class="fas fa-search-minus table__icon-search"></i>
+                    </td>
+                    <td>
+                        <input
+                            type="text"
+                            v-model="pagination.filters.name"
+                            @keyup.enter="pagination.applyFilters"
+                        />
+                    </td>
+                    <td>
+                        <input
+                            type="text"
+                            v-model="pagination.filters.guard_name"
+                            @keyup.enter="pagination.applyFilters"
+                        />
+                    </td>
+                    <td>
+                        <input
+                            type="text"
+                            v-model="pagination.filters.description"
+                            @keyup.enter="pagination.applyFilters"
+                        />
+                    </td>
                     <td></td>
                     <td></td>
                     <td>
                         <div class="btns">
-                            <button class="btn btn--green" @click="pagination.applyFilters">
-                                Buscar <i class="fas fa-search"></i>
+                            <button
+                                class="btn btn--primary"
+                                @click="pagination.applyFilters"
+                            >
+                                <i class="fas fa-search"></i>
                             </button>
-                            <button class="btn btn--gray" @click="pagination.clearFilters">
+                            <button
+                                class="btn btn--gray"
+                                @click="pagination.clearFilters"
+                            >
                                 <i class="fas fa-eraser"></i>
                             </button>
                         </div>
@@ -95,7 +107,7 @@
                         <div class="btns">
                             <router-link
                                 :to="'/group/' + item.uuid + '/edit'"
-                                class="btn btn--green"
+                                class="btn btn--primary"
                             >
                                 <i class="fas fa-edit"></i>
                             </router-link>
@@ -120,9 +132,7 @@
         </table>
     </template>
     <template v-if="layout === 'tree'">
-        <Tree
-            :data="pagination.paginator.data"
-        />
+        <Tree :data="pagination.paginator.data" />
     </template>
     <Paginator
         :paginator="pagination.paginator"
@@ -131,25 +141,22 @@
 </template>
 
 <script setup>
-    import { reactive, ref } from 'vue'
-    import { useRoute, useRouter } from 'vue-router'
-    import Tree from './Tree.vue'
-    
-    const route = useRoute()
-    const router = useRouter()
-    const layout = ref('list')
-    const pagination = dataPaginator({
-        urlBase: new URL(window.public_path + '/api/group'),
-        filtersKeys: ['name', 'guard_name', 'description'],
-        config: {
-            cachePrefix: 'group',
-            deleteEnpoint: window.public_path + '/api/group/delete/${uuid}',
-            restoreEnpoint: window.public_path + '/api/group/restore/${uuid}',
-        }
-    })
-    pagination.syncData()
+import { ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import Tree from './Tree.vue';
 
+const route = useRoute();
+const router = useRouter();
+const layout = ref('list');
+const pagination = dataPaginator({
+    urlBase: new URL(window.public_path + '/api/group'),
+    filtersKeys: ['name', 'guard_name', 'description'],
+    config: {
+        cachePrefix: 'group',
+        deleteEnpoint: window.public_path + '/api/group/delete/${uuid}',
+        restoreEnpoint: window.public_path + '/api/group/restore/${uuid}',
+    },
+});
+pagination.syncData();
 </script>
-<style lang="scss" scoped>
-    
-</style>
+<style lang="scss" scoped></style>

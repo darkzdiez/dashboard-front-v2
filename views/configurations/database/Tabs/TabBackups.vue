@@ -1,10 +1,13 @@
 <template>
     <SectionHeader>
         <template #buttons>
-            <button
-                class="btn btn--green"
-                @click="generateNewBackup"
-            >
+            <router-link class="btn btn--darkgray-outline" to="/configurations">
+                <i class="fas fa-arrow-left"></i> Volver
+            </router-link>
+            <button class="btn btn--gray" @click="getData">
+                <i class="fas fa-sync-alt"></i> Actualizar
+            </button>
+            <button class="btn btn--green" @click="generateNewBackup">
                 <i class="fas fa-database"></i> Generar Backup
             </button>
         </template>
@@ -52,76 +55,86 @@
 </template>
 
 <script setup>
-    import { reactive, ref, watch, watchEffect } from 'vue'
-    import { useRoute, useRouter } from 'vue-router'
+import { reactive } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
-    const route = useRoute()
-    const router = useRouter()
+const route = useRoute();
+const router = useRouter();
 
-    const generateNewBackup = () => {
-        window.awesomeModal.confirm(
+const generateNewBackup = () => {
+    window.awesomeModal
+        .confirm(
             '¿Está seguro?',
-            '¿Está seguro que desea generar un nuevo backup?',
-        ).then((result) => {
+            '¿Está seguro que desea generar un nuevo backup?'
+        )
+        .then((result) => {
             if (result) {
-                window.awesomeModal.loading()
+                window.awesomeModal.loading();
                 httpRequest({
                     url: window.public_path + '/api/database/backup/generate',
-                    method: 'POST'
+                    method: 'POST',
                 })
-                .then((data) => {
-                    getData()
-                    window.awesomeModal.closeAll()
-                    window.awesomeModal.alert('Backup generado correctamente')
-                })
-                .catch((error) => {
-                    window.awesomeModal.closeAll()
-                })
+                    .then((data) => {
+                        getData();
+                        window.awesomeModal.closeAll();
+                        window.awesomeModal.alert(
+                            'Backup generado correctamente'
+                        );
+                    })
+                    .catch((error) => {
+                        window.awesomeModal.closeAll();
+                    });
             }
-        })
-    }
+        });
+};
 
-    const deleteBackup = (path) => {
-        window.awesomeModal.confirm(
+const deleteBackup = (path) => {
+    window.awesomeModal
+        .confirm(
             '¿Está seguro?',
-            '¿Está seguro que desea eliminar este backup?',
-        ).then((result) => {
+            '¿Está seguro que desea eliminar este backup?'
+        )
+        .then((result) => {
             if (result) {
-                window.awesomeModal.loading()
-                let data = new FormData()
-                data.append('path', path)
+                window.awesomeModal.loading();
+                let data = new FormData();
+                data.append('path', path);
                 httpRequest({
                     url: window.public_path + '/api/database/backup/delete',
                     method: 'POST',
-                    data: data
+                    data: data,
                 })
-                .then((data) => {
-                    getData()
-                    window.awesomeModal.closeAll()
-                    window.awesomeModal.alert('Backup eliminado correctamente')
-                })
-                .catch((error) => {
-                    window.awesomeModal.closeAll()
-                })
+                    .then((data) => {
+                        getData();
+                        window.awesomeModal.closeAll();
+                        window.awesomeModal.alert(
+                            'Backup eliminado correctamente'
+                        );
+                    })
+                    .catch((error) => {
+                        window.awesomeModal.closeAll();
+                    });
             }
-        })
-    }
+        });
+};
 
-    const backups = reactive([])
-    const getData = () => {
-        backups.splice(0, backups.length)
-        httpRequest({
-            url: window.public_path + '/api/database/backup/list',
-            method: 'GET',
-        })
+const backups = reactive([]);
+const getData = () => {
+    backups.splice(0, backups.length);
+    let modal = awesomeModal.loading();
+    httpRequest({
+        url: window.public_path + '/api/database/backup/list',
+        method: 'GET',
+    })
         .then((data) => {
-            backups.push( ...data)
+            backups.push(...data);
+            modal.close();
         })
         .catch((error) => {
-        })
-    }
-    getData()
-
+            modal.close();
+        });
+};
+getData();
 </script>
 <style lang="scss" scoped>
 legend {
@@ -136,7 +149,7 @@ legend {
     margin-bottom: 15px;
     border-radius: 5px;
     background-color: #fff;
-    box-shadow: 0 0 5px rgba(0,0,0,.1);
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
     label {
         padding: 0 15px;
         flex: 1;

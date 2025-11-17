@@ -1,4 +1,3 @@
-
 <template>
     <h3>Datos Basicos:</h3>
     <div class="grid-2 gap-15">
@@ -28,6 +27,37 @@
             placeholder=""
             v-model="form.password"
             :error="errors.password"
+            class="col-1"
+        />
+    </div>
+    <h3>Permisos de Acceso:</h3>
+    <div class="grid-2 gap-15">
+        <InputCheckbox
+            label="Login con Contraseña"
+            :true-value="1"
+            :false-value="0"
+            v-model="form.login_with_password"
+            class="col-1"
+        />
+        <InputCheckbox
+            label="Login con Google"
+            :true-value="1"
+            :false-value="0"
+            v-model="form.login_with_google"
+            class="col-1"
+        />
+        <InputCheckbox
+            label="Acceso Testing"
+            :true-value="1"
+            :false-value="0"
+            v-model="form.access_testing"
+            class="col-1"
+        />
+        <InputCheckbox
+            label="Acceso Production"
+            :true-value="1"
+            :false-value="0"
+            v-model="form.access_production"
             class="col-1"
         />
     </div>
@@ -62,7 +92,7 @@
         >
             <template #option="option">
                 <div>
-                    {{ ( option?.name ) }}
+                    {{ option?.name }}
                 </div>
             </template>
         </SelectAutocomplete>
@@ -80,31 +110,28 @@
 </template>
 
 <script setup>
-    import { reactive } from "@vue/reactivity";
+import { reactive } from '@vue/reactivity';
 
-    defineProps({
-        form: {
-            type: Object,
-            required: true,
-        },
-        errors: {
-            type: Object,
-            required: true,
-        },
-    })
+defineProps({
+    form: {
+        type: Object,
+        required: true,
+    },
+    errors: {
+        type: Object,
+        required: true,
+    },
+});
 
-
-    const groups = reactive({})
-    httpRequest({
-        url: window.public_path + '/api/group',
-        method: 'POST',
-    })
+const groups = reactive({});
+httpRequest({
+    url: window.public_path + '/api/group',
+    method: 'POST',
+})
     .then((data) => {
-        Object.assign(groups, data)
+        Object.assign(groups, data);
     })
-    .catch((error) => {
-    })
+    .catch((error) => {});
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

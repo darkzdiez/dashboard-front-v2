@@ -1,4 +1,4 @@
-import Home from './Home.vue'
+import Home from './Home.vue';
 
 export const routes = {
     path: '/job',
@@ -6,4 +6,4 @@ export const routes = {
     meta: {
         displayName: 'Jobs',
     },
-}
+};

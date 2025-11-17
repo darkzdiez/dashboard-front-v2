@@ -35,10 +35,7 @@
         >
             <i class="far fa-square fa-lg"></i> Listo
         </div>
-        <div
-            class="control control--green"
-            v-if="localState == 'finalizado'"
-        >
+        <div class="control control--green" v-if="localState == 'finalizado'">
             <i class="fas fa-check-square fa-lg"></i> Listo
         </div>
         <!-- Controles para el supervisor, para correcciones -->
@@ -49,14 +46,12 @@
         >
             <i class="fas fa-pen"></i> Corregir
         </div>
-
     </div>
 </template>
 
 <script setup>
-import { computed } from '@vue/reactivity';
-import { reactive, ref, onMounted, watchEffect } from 'vue'
-import supervisorControlsModal from './supervisorControlsModal.vue'
+import { ref } from 'vue';
+import supervisorControlsModal from './supervisorControlsModal.vue';
 /*
 posibles states:
 sin-iniciar
@@ -87,34 +82,38 @@ const props = defineProps({
         required: false,
         default: '',
     },
-})
-const emit = defineEmits(['update:state', 'change'])
-const localState = ref(props.state)
+});
+const emit = defineEmits(['update:state', 'change']);
+const localState = ref(props.state);
 
 const confirmationChange = (state) => {
-    localState.value = state
-}
+    localState.value = state;
+};
 const changeState = (state) => {
-    return props.changeMethod(props.refKey, state, confirmationChange, props.refRaw)
-}
+    return props.changeMethod(
+        props.refKey,
+        state,
+        confirmationChange,
+        props.refRaw
+    );
+};
 const supervisorControls = () => {
     const modal = awesomeModal.open({
         type: 'component',
         component: supervisorControlsModal,
         props: props,
-    })
+    });
     modal.promise.then((data) => {
         if (data == 'reiniciar') {
-            changeState('reiniciar')
+            changeState('reiniciar');
         }
-    })
-    modal.promise.catch((error) => {
-    })
-}
+    });
+    modal.promise.catch((error) => {});
+};
 </script>
 
 <style lang="scss" scoped>
-.controls{
+.controls {
     display: flex;
     gap: 7px;
     justify-content: flex-end;
@@ -128,8 +127,7 @@ const supervisorControls = () => {
 
     /* Negro */
 
-    color: #0C0C0C;
-
+    color: #0c0c0c;
 
     user-select: none;
     /* botón check */
@@ -149,27 +147,27 @@ const supervisorControls = () => {
 
     /* Gris medio */
 
-    border: 1px solid #9A9A9A;
+    border: 1px solid #9a9a9a;
     border-radius: 40px;
     &--yellow {
         background: rgba(240, 218, 20, 0.2);
-        border: 1px solid #9A9A9A;
+        border: 1px solid #9a9a9a;
     }
     &--blue {
-        background: #DBF5FF;
-        border: 1px solid #9A9A9A;
+        background: #dbf5ff;
+        border: 1px solid #9a9a9a;
     }
     &--green {
-        background: #E3F4EC;
-        border: 1px solid #00A651;
+        background: #e3f4ec;
+        border: 1px solid #00a651;
         i {
-            color: #00A651;
+            color: #00a651;
         }
     }
     &--disabled {
-        border: 1px solid #D5D5D5;
+        border: 1px solid #d5d5d5;
         border-radius: 40px;
-        color: #9A9A9A;
+        color: #9a9a9a;
     }
 }
 </style>

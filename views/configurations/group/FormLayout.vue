@@ -1,4 +1,3 @@
-
 <template>
     <div class="grid-3 gap-15">
         <InputText
@@ -22,7 +21,11 @@
             :error="errors.parent_id"
             class="col-1"
             option-key="id"
-            :itemConditional="(option) => { return option.uuid != route.params.id }"
+            :itemConditional="
+                (option) => {
+                    return option.uuid != route.params.id;
+                }
+            "
         >
             <template #option="{ id, name, uuid }">
                 <div>
@@ -30,7 +33,12 @@
                 </div>
             </template>
         </SelectAutocomplete>
-        <wysiwyg-editor label="Descripción" v-model="form.description" :error="errors.description" class="col-3" />
+        <wysiwyg-editor
+            label="Descripción"
+            v-model="form.description"
+            :error="errors.description"
+            class="col-3"
+        />
     </div>
     <h3>Permisos:</h3>
     <!--
@@ -46,7 +54,10 @@
     -->
     <PermissionsList :form="form" />
     <h3>Notificaciones y Alertas que recibe:</h3>
-    <div class="grid-3 gap-15" v-if="Object.keys(alertTypes) && Object.keys(alertTypes).length > 0">
+    <div
+        class="grid-3 gap-15"
+        v-if="Object.keys(alertTypes) && Object.keys(alertTypes).length > 0"
+    >
         <InputCheckbox
             v-for="(item, key) in Object.keys(alertTypes)"
             :key="key"
@@ -58,25 +69,24 @@
 </template>
 
 <script setup>
-    import { reactive } from "@vue/reactivity";
-    import { useRoute, useRouter } from 'vue-router'
-    import PermissionsList from '../../../components/PermissionsList.vue'
+import { useRoute, useRouter } from 'vue-router';
+import PermissionsList from '../../../components/PermissionsList.vue';
 
-    const route = useRoute()
-    const router = useRouter()
+const route = useRoute();
+const router = useRouter();
 
-    defineProps({
-        form: {
-            type: Object,
-            required: true,
-        },
-        errors: {
-            type: Object,
-            required: true,
-        },
-    })
+defineProps({
+    form: {
+        type: Object,
+        required: true,
+    },
+    errors: {
+        type: Object,
+        required: true,
+    },
+});
 
-    const alertTypes = {}
+const alertTypes = {};
 </script>
 
 <style lang="scss" scoped></style>

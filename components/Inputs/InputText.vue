@@ -2,13 +2,9 @@
     <label class="input col-1" :class="{ 'input--error': error.length }">
         <span v-if="label">{{ label }}</span>
         <div
-            style="
-                display: flex;
-                justify-content: center;
-                align-items: stretch;
-            "
+            style="display: flex; justify-content: center; align-items: stretch"
             :class="{
-                'input-password': type === 'password'
+                'input-password': type === 'password',
             }"
         >
             <input
@@ -24,13 +20,14 @@
                 :step="step"
                 @input="$emit('update:modelValue', $event.target.value)"
                 :list="list"
-            >
+                ref="refInput"
+            />
             <button
                 type="button"
                 v-if="type === 'password'"
                 @click.prevent="toggleType"
                 style="
-                    border: 1px solid #C4C4C4;
+                    border: 1px solid #c4c4c4;
                     background: transparent;
                     border-left: none;
                     padding: 0;
@@ -54,143 +51,166 @@
 </template>
 
 <script setup>
-    import { reactive, ref } from 'vue'
+import { onMounted, ref, useTemplateRef } from 'vue';
 
-    const props = defineProps({
-        label: {
-            type: String,
-            required: true,
-        },
-        placeholder: {
-            type: String,
-            required: false,
-        },
-        modelValue: {
-            type: String,
-            required: true,
-        },
-        disabled: {
-            type: Boolean,
-            required: false,
-            default: false
-        },
-        error: {
-            type: Array,
-            required: false,
-        },
-        type: {
-            type: String,
-            required: false,
-            default: 'text'
-        },
-        list: {
-            type: String,
-            required: false
-        },
-        min: {
-            required: false,
-            default: null
-        },
-        max: {
-            required: false,
-            default: null
-        },
-        step: {
-            required: false,
-            default: null
-        },
-    })
-    defineEmits(['update:modelValue', 'change'])
+const props = defineProps({
+    label: {
+        type: String,
+        required: true,
+    },
+    placeholder: {
+        type: String,
+        required: false,
+    },
+    modelValue: {
+        type: String,
+        required: true,
+    },
+    disabled: {
+        type: Boolean,
+        required: false,
+        default: false,
+    },
+    error: {
+        type: Array,
+        required: false,
+    },
+    type: {
+        type: String,
+        required: false,
+        default: 'text',
+    },
+    list: {
+        type: String,
+        required: false,
+    },
+    min: {
+        required: false,
+        default: null,
+    },
+    max: {
+        required: false,
+        default: null,
+    },
+    step: {
+        required: false,
+        default: null,
+    },
+});
+const refInput = useTemplateRef('refInput');
 
-    const typeInput = ref(null)
-    if ( props.type === 'password' ) {
-        typeInput.value = 'text'
-        setTimeout(() => {
-            typeInput.value = 'password'
-        }, 1000);
+const emit = defineEmits(['update:modelValue', 'change', 'mounted']);
+
+onMounted(() => {
+    emit('mounted', {
+        refInput: refInput.value,
+    });
+});
+
+const typeInput = ref(null);
+if (props.type === 'password') {
+    typeInput.value = 'text';
+    setTimeout(() => {
+        typeInput.value = 'password';
+    }, 1000);
+} else {
+    typeInput.value = props.type;
+}
+
+const toggleType = () => {
+    if (typeInput.value === 'password') {
+        typeInput.value = 'text';
     } else {
-        typeInput.value = props.type
+        typeInput.value = 'password';
     }
-
-    const toggleType = () => {
-        if ( typeInput.value === 'password' ) {
-            typeInput.value = 'text'
-        } else {
-            typeInput.value = 'password'
-        }
-    }
+};
 </script>
 
 <style lang="scss" scoped>
-	label[class*="input"] {
+label[class*='input'] {
+    display: block;
+    span {
+        font-weight: 500;
+        line-height: 19px;
+        color: #9a9a9a;
+        font-size: 14px;
+        margin-bottom: 6px;
         display: block;
-        span {
-            font-weight: 500;
-            line-height: 19px;
-            color: #9A9A9A;
-            font-size: 13px;
-            margin-bottom: 9px;
-            display: block;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            &:hover {
-                overflow: unset;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        &:hover {
+            overflow: unset;
+        }
+    }
+    input {
+        width: 100%;
+        height: 48px;
+        border: 1px solid #c4c4c4;
+        border-radius: 4px;
+        padding: 0 15px;
+        box-sizing: border-box;
+        &:-webkit-autofill {
+            box-shadow:
+                0 0 0 30px white inset,
+                0px 0px 4px 0px rgba(0, 0, 0, 0) !important;
+        }
+        &:-webkit-autofill:focus,
+        &:-webkit-autofill:active {
+            box-shadow:
+                0 0 0 30px white inset,
+                0px 0px 4px 0px rgba(0, 0, 0, 0.7) !important;
+            border: 1px solid #2e2e2e;
+        }
+        &:focus,
+        &:active {
+            box-shadow:
+                0 0 0 30px white inset,
+                0px 0px 4px 0px rgba(0, 0, 0, 0.7) !important;
+            border: 1px solid #2e2e2e;
+        }
+        &:focus,
+        &:valid,
+        &:not(:placeholder-shown) {
+            outline: none;
+            & + span {
+                top: 5px;
+                font-size: 14px;
+                color: #656565;
+                opacity: 0.8;
             }
         }
+        &:focus {
+            box-shadow: 0 0 2px 1px rgba(#00a651, 0.5);
+        }
+        &::-webkit-input-placeholder {
+            opacity: 1;
+        }
+    }
+    &.input--error {
+        color: #ff0000;
         input {
-            width: 100%;
-            height: 48px;
-            border: 1px solid #C4C4C4;
-            border-radius: 4px;
-            padding: 0 15px;
-            box-sizing: border-box;
-			&:-webkit-autofill,
-			&:-webkit-autofill:hover, 
-			&:-webkit-autofill:focus, 
-			&:-webkit-autofill:active{
-				-webkit-box-shadow: 0 0 0 30px white inset !important;
-			}
-			&:focus, &:valid, &:not(:placeholder-shown) {
-				outline: none;
-				& + span {
-					top: 5px;
-					font-size: 12px;
-					color: #656565;
-					opacity: 0.8;
-				}
-			}
+            border: 1px solid #ff0000;
             &:focus {
-                box-shadow: 0 0 2px 1px rgba(#00a651, .5);
-            }
-			&::-webkit-input-placeholder {
-				opacity: 1;
-			}
-        }
-        &.input--error {
-            color: #FF0000;
-            input {
-                border: 1px solid #FF0000;
-                &:focus {
-                    box-shadow: 0 0 2px 1px rgba(#FF0000, .5);
-                }
-            }
-        }
-        .input-password {            
-            input {
-                border-right: none;
-                border-radius: 4px 0 0 4px;
-            }
-            button {
-                border-radius: 0 4px 4px 0;
+                box-shadow: 0 0 2px 1px rgba(#ff0000, 0.5);
             }
         }
     }
-
-    label[class*="input--small"] {
+    .input-password {
         input {
-            height: 33px;
-            padding: 0 15px;
+            border-right: none;
+            border-radius: 4px 0 0 4px;
+        }
+        button {
+            border-radius: 0 4px 4px 0;
         }
     }
+}
+
+label[class*='input--small'] {
+    input {
+        height: 33px;
+        padding: 0 15px;
+    }
+}
 </style>

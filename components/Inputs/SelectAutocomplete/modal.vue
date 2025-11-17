@@ -15,32 +15,30 @@
 </template>
 
 <script setup>
-    import Dropdown from './dropdown.vue'
-    import { reactive, ref, watch, onMounted, useSlots } from 'vue'
+import { useSlots } from 'vue';
+import Dropdown from './dropdown.vue';
 
-    const props = defineProps({
-        data: {
-            type: Object,
-            required: true,
-        }
-    })
+const props = defineProps({
+    data: {
+        type: Object,
+        required: true,
+    },
+});
 
-    const slots = useSlots()
-    slots.option = props.data.rawData.slots.option
+const slots = useSlots();
+slots.option = props.data.rawData.slots.option;
 
-    const close = () => {
-        props.data.callback.reject('Close on overlay click')
-    }
-
+const close = () => {
+    props.data.callback.reject('Close on overlay click');
+};
 </script>
 
-
 <style lang="scss" scoped>
-    .modal__inner {
-        position: relative;
-        width: calc(100% - 25px);
-        height: 340px;
-        margin-top: -41px;
-        box-sizing: border-box;
-    }
+.modal__inner {
+    position: relative;
+    width: calc(100% - 25px);
+    height: 340px;
+    margin-top: -41px;
+    box-sizing: border-box;
+}
 </style>

@@ -1,17 +1,18 @@
-html, body {
-	padding: 0;
-	margin: 0;
+@use 'sass:list';
+@use 'sass:map';
+html,
+body {
+    padding: 0;
+    margin: 0;
     font-family: var(--roboto);
 }
 
-@mixin min($bp, $max: "null", $device: "screen") {
-    @if $max=="null" {
+@mixin min($bp, $max: 'null', $device: 'screen') {
+    @if $max== 'null' {
         @media only #{$device} and (min-width: #{$bp}) {
             @content;
         }
-    }
-
-    @else {
+    } @else {
         @media only #{$device} and (min-width: #{$bp}) and (max-width: #{$max}) {
             @content;
         }
@@ -19,7 +20,7 @@ html, body {
 }
 
 @function bp($bp) {
-    @return map-get($breakpoints, $bp);
+    @return map.get($breakpoints, $bp);
 }
 
 $breakpoints: (
@@ -33,19 +34,18 @@ $breakpoints: (
     // Tablets Landscape and small desktops
     lg: 1200px,
     // Desktops
-    xl: 1400px,
-    // Large Desktop
+    xl: 1400px, // Large Desktop
 );
 
 @function container($container-size, $true-val: false) {
-    @return map-get($container-sizes, $container-size);
+    @return map.get($container-sizes, $container-size);
 }
 // map-get: Es una función que devuelve el valor de una clave de un mapa.
 $container-sizes: (
-    sm: map-get($breakpoints, sm) - 30px,
-    md: map-get($breakpoints, md) - 40px,
-    lg: map-get($breakpoints, lg) - 50px,
-    xl: map-get($breakpoints, xl) - 60px
+    sm: map.get($breakpoints, sm) - 30px,
+    md: map.get($breakpoints, md) - 40px,
+    lg: map.get($breakpoints, lg) - 50px,
+    xl: map.get($breakpoints, xl) - 60px,
 );
 .container-half-right {
     padding-right: 1rem;
@@ -97,59 +97,77 @@ $container-sizes: (
         padding-left: 1rem;
         width: 100%;
 
-        $i: index($container-sizes, $bp $container-size);
+        $i: list.index($container-sizes, $bp $container-size);
 
-        @for $j from $i through length($container-sizes) {
-            @include min(#{bp(nth(nth($container-sizes, $j), 1))}) {
-                max-width: container(#{nth(nth($container-sizes, $j), 1)});
+        @for $j from $i through list.length($container-sizes) {
+            @include min(#{bp(list.nth(list.nth($container-sizes, $j), 1))}) {
+                max-width: container(
+                    #{list.nth(list.nth($container-sizes, $j), 1)}
+                );
             }
         }
     }
 }
 
-
 .align-self-center {
     align-self: center;
 }
 .btn {
-    padding: 10.5px 15px;
-    font-size: 16px;
+    padding: 0px 19px;
+    height: 31px;
+    font-size: 14px;
     font-family: var(--montserrat);
     font-weight: 500;
-    letter-spacing: 1px;
     text-decoration: none;
-    transition: .3s ease;
+    transition: 0.3s ease;
     border: none;
     box-shadow: none;
     line-height: 16px;
     white-space: nowrap;
     box-sizing: border-box;
     text-align: center;
-    
+
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 2px;
+
+    cursor: pointer;
+
+    letter-spacing: 0;
     // border-radius: 0;
-    border-radius: 4px;
+    border-radius: 100px;
+    gap: 5px;
+    user-select: none;
+    i {
+        font-size: 12px;
+    }
     &--small {
         font-size: 15px;
         padding: 8px 16px;
     }
+    &--very-small {
+        font-size: 13px;
+        padding: 4px 14px;
+        line-height: 13px;
+        height: 25px;
+    }
     &--large {
         font-size: 18px;
         padding: 12px 24px;
+        height: 40px;
     }
     &--extra-large {
         font-size: 20px;
         padding: 16px 32px;
+        height: 50px;
     }
     &--block {
-        display: block;
+        display: flex;
         width: 100%;
-    }    
+    }
     &--rounded {
-        border-radius: 100px
+        border-radius: 100px;
     }
     &--circle {
         border-radius: 100%;
@@ -162,6 +180,10 @@ $container-sizes: (
         &:hover {
             background-color: var(--darkgray);
             color: var(--white);
+        }
+        &:hover.btn--disabled {
+            background-color: var(--gray);
+            color: var(--darkgray);
         }
     }
     &--darkgray {
@@ -208,7 +230,7 @@ $container-sizes: (
         border: 1px solid #000000;
         &:hover {
             background-color: #000000;
-            color: #FFFFFF;
+            color: #ffffff;
         }
     }
     &--grayred-outline {
@@ -218,7 +240,7 @@ $container-sizes: (
         &:hover {
             background-color: rgb(255, 32, 32);
             border: 1px solid rgb(255, 32, 32);
-            color: #FFFFFF;
+            color: #ffffff;
         }
     }
     &--lightgray {
@@ -232,14 +254,14 @@ $container-sizes: (
     &--lightgray-outline {
         background-color: transparent;
         color: var(--darkgray);
-        border: 1px solid #D4D4D4;
+        border: 1px solid #d4d4d4;
         &:hover {
             background-color: var(--lightgray);
             color: var(--darkgray);
         }
     }
     &--lightpink {
-        background-color: #FEF1F1;
+        background-color: #fef1f1;
         color: #717171;
         &:hover {
             background-color: #ebd9d9;
@@ -247,20 +269,20 @@ $container-sizes: (
         }
     }
     &--lightblue {
-        background-color: #00AEEE;
-        color: #FFFFFF;
+        background-color: #00aeee;
+        color: #ffffff;
         &:hover {
-            background-color: #0088B8;
-            color: #FFFFFF;
+            background-color: #0088b8;
+            color: #ffffff;
         }
     }
     &--lightblue-outline {
         background-color: transparent;
-        color: #00AEEE;
-        border: 1px solid #00AEEE;
+        color: #00aeee;
+        border: 1px solid #00aeee;
         &:hover {
-            background-color: #00AEEE;
-            color: #FFFFFF;
+            background-color: #00aeee;
+            color: #ffffff;
         }
     }
     &--red {
@@ -268,6 +290,15 @@ $container-sizes: (
         color: var(--white);
         &:hover {
             background-color: var(--darkred);
+        }
+    }
+    &--red-outline {
+        background-color: transparent;
+        color: var(--red);
+        border: 1px solid var(--red);
+        &:hover {
+            background-color: var(--red);
+            color: var(--white);
         }
     }
     &--yellow {
@@ -293,6 +324,15 @@ $container-sizes: (
             background-color: var(--darkpurple);
         }
     }
+    &--purple-outline {
+        background-color: transparent;
+        color: var(--purple);
+        border: 1px solid var(--purple);
+        &:hover {
+            background-color: var(--purple);
+            color: var(--white);
+        }
+    }
     &--green {
         background-color: var(--green);
         color: var(--white);
@@ -311,11 +351,28 @@ $container-sizes: (
     }
     &--lightgreen {
         background-color: var(--lightgreen);
-        color: var(--green);
+        color: #000;
         border: 1px solid var(--green);
         &:hover {
             background-color: var(--green);
             color: var(--white);
+        }
+        &:hover.btn--disabled {
+            background-color: var(--lightgreen);
+            color: var(--green);
+        }
+    }
+    &--lightyellow {
+        background-color: var(--lightyellow);
+        color: #000;
+        border: 1px solid var(--yellow);
+        &:hover {
+            background-color: var(--yellow);
+            color: var(--white);
+        }
+        &:hover.btn--disabled {
+            background-color: var(--lightyellow);
+            color: var(--yellow);
         }
     }
     &--red {
@@ -341,33 +398,66 @@ $container-sizes: (
             color: var(--white);
         }
     }
+    &--primary {
+        background-color: #272727;
+        color: #ffffff;
+        border: 1px solid #272727;
+        &:hover {
+            background-color: #000000;
+            color: #ffffff;
+        }
+    }
+    &--primary-outline {
+        background-color: transparent;
+        color: #272727;
+        border: 1px solid #272727;
+        &:hover {
+            background-color: #272727;
+            color: #ffffff;
+        }
+    }
     @media (max-width: 768px) {
         padding: 12px 32px;
         font-size: 16px;
     }
+
+    &--disabled {
+        opacity: 0.9;
+        cursor: not-allowed;
+    }
+}
+.btn-back {
+    color: #626262;
+    background: transparent;
+    border: none;
+    font-weight: 600;
+    font-size: 28px;
+    line-height: 28px;
+    padding: 0;
+    margin-right: 18px;
 }
 
 .state {
     width: 12px;
     height: 12px;
-    background: #D9D9D9;
-    border: 1px solid #D9D9D9;
+    background: #d9d9d9;
+    border: 1px solid #d9d9d9;
     border-radius: 12px;
     &--red {
-        background: #FF2020;
-        border: 1px solid #FF2020;
+        background: #ff2020;
+        border: 1px solid #ff2020;
     }
     &--yellow {
-        background: #F0DA14;
-        border: 1px solid #F0DA14;
+        background: #f0da14;
+        border: 1px solid #f0da14;
     }
     &--green {
-        background: #00A651;
-        border: 1px solid #00A651;
+        background: #00a651;
+        border: 1px solid #00a651;
     }
     &--blue {
-        background: #00AEEE;
-        border: 1px solid #00AEEE;
+        background: #00aeee;
+        border: 1px solid #00aeee;
     }
 }
 
@@ -380,8 +470,9 @@ $container-sizes: (
     width: 100%;
 }
 
-$grid__cols: 20;
-.flex, .row {
+$grid__cols: 50;
+.flex,
+.row {
     display: flex;
     flex-wrap: wrap;
 }
@@ -396,7 +487,7 @@ $grid__cols: 20;
 @for $i from 1 through $grid__cols {
     .col-#{$i} {
         grid-column: auto / span #{$i};
-        flex-basis: calc(100 / ($grid__cols / $i) ) * 1%;
+        flex-basis: calc(100 / ($grid__cols / $i)) * 1%;
         box-sizing: border-box;
         // overflow: hidden;
     }
@@ -415,7 +506,7 @@ $grid__cols: 20;
         @for $i from 1 through $grid__cols {
             .col-#{$breakpoint}-#{$i} {
                 grid-column: auto / span #{$i};
-                flex-basis: calc(100 / ($grid__cols / $i) ) * 1%;
+                flex-basis: calc(100 / ($grid__cols / $i)) * 1%;
                 box-sizing: border-box;
                 // overflow: hidden;
             }
@@ -424,7 +515,7 @@ $grid__cols: 20;
                 grid-template-columns: repeat($i, minmax(0, 1fr));
             }
         }
-        .btn-#{$breakpoint}-auto{
+        .btn-#{$breakpoint}-auto {
             display: inline-block;
             width: auto;
         }
@@ -486,7 +577,7 @@ $spacing: 150;
 $display: (
     flex: flex,
     block: block,
-    none: none
+    none: none,
 );
 @each $key, $value in $display {
     .d-#{$key} {
@@ -494,26 +585,71 @@ $display: (
     }
 }
 $class-promerties: (
-    w: ( width ),
-    m: ( margin ),
-    mt: ( margin-top ),
-    mb: ( margin-bottom ),
-    ml: ( margin-left ),
-    ms: ( margin-left ),
-    mr: ( margin-right ),
-    me: ( margin-right ),
-    my: ( margin-top margin-bottom ),
-    mx: ( margin-left margin-right ),
-    p: ( padding ),
-    pt: ( padding-top ),
-    pl: ( padding-left ),
-    ps: ( padding-left ),
-    pr: ( padding-right ),
-    pe: ( padding-right ),
-    pb: ( padding-bottom ),
-    py: ( padding-top, padding-bottom ),
-    px: ( padding-left, padding-right ),
-    gap: ( gap ),
+    w: (
+        width,
+    ),
+    h: (
+        height,
+    ),
+    m: (
+        margin,
+    ),
+    mt: (
+        margin-top,
+    ),
+    mb: (
+        margin-bottom,
+    ),
+    ml: (
+        margin-left,
+    ),
+    ms: (
+        margin-left,
+    ),
+    mr: (
+        margin-right,
+    ),
+    me: (
+        margin-right,
+    ),
+    my: (
+        margin-top margin-bottom,
+    ),
+    mx: (
+        margin-left margin-right,
+    ),
+    p: (
+        padding,
+    ),
+    pt: (
+        padding-top,
+    ),
+    pl: (
+        padding-left,
+    ),
+    ps: (
+        padding-left,
+    ),
+    pr: (
+        padding-right,
+    ),
+    pe: (
+        padding-right,
+    ),
+    pb: (
+        padding-bottom,
+    ),
+    py: (
+        padding-top,
+        padding-bottom,
+    ),
+    px: (
+        padding-left,
+        padding-right,
+    ),
+    gap: (
+        gap,
+    ),
 );
 @for $i from 0 through $spacing {
     @each $class, $properties in $class-promerties {
@@ -557,10 +693,12 @@ $class-promerties: (
 .mb-auto {
     margin-bottom: auto;
 }
-.ml-auto, .ms-auto {
+.ml-auto,
+.ms-auto {
     margin-left: auto;
 }
-.mr-auto, .me-auto {
+.mr-auto,
+.me-auto {
     margin-right: auto;
 }
 .w-full {
@@ -572,11 +710,13 @@ $class-promerties: (
 .text-center {
     text-align: center;
 }
-.text-left, .text-start {
-    text-align: left;
+.text-left,
+.text-start {
+    text-align: left !important;
 }
-.text-right, .text-end {
-    text-align: right;
+.text-right,
+.text-end {
+    text-align: right !important;
 }
 .nowrap {
     white-space: nowrap;
@@ -602,51 +742,53 @@ $class-promerties: (
     box-shadow: 0 0 0 0.25rem rgb(13 110 253 / 25%);
 }
 .align-items-end {
-    align-items: flex-end;
+    align-items: flex-end !important;
 }
 .align-items-start {
-    align-items: flex-start;
+    align-items: flex-start !important;
 }
 .align-items-center {
-    align-items: center;
+    align-items: center !important;
 }
 .justify-content-end {
-    justify-content: flex-end;
+    justify-content: flex-end !important;
 }
 .justify-content-between {
-    justify-content: space-between;
+    justify-content: space-between !important;
 }
 .justify-content-center {
-    justify-content: center;
+    justify-content: center !important;
 }
 .flex-grow-1 {
-    flex-grow: 1;
+    flex-grow: 1 !important;
 }
 .cursor-pointer {
-    cursor: pointer;
+    cursor: pointer !important;
 }
 .position-relative {
-    position: relative
+    position: relative !important;
 }
 .img-fluid {
-    max-width: 100%;
-    height: auto;
+    max-width: 100% !important;
+    height: auto !important;
 }
 .text-red {
-    color: var(--red);
+    color: var(--red) !important;
 }
 .text-green {
-    color: var(--green);
+    color: var(--green) !important;
 }
-.ms-auto, .ml-auto {
-    margin-left: auto;
+.ms-auto,
+.ml-auto {
+    margin-left: auto !important;
 }
-.me-auto, .mr-auto {
-    margin-right: auto;
+.me-auto,
+.mr-auto {
+    margin-right: auto !important;
 }
 
 .overflow-x-auto {
-    overflow-x: auto;
+    overflow-x: auto !important;
 }
 
 .tabs {
@@ -658,27 +800,27 @@ $class-promerties: (
     &__tab {
         font-weight: 500;
         font-size: 18px;
-        color: #9A9A9A;
+        color: #9a9a9a;
         cursor: pointer;
         border: none;
-        border-bottom: 2px solid #D8D8D8;
+        border-bottom: 2px solid #d8d8d8;
         padding: 8px 15px;
-        transition: all .3s ease;
+        transition: all 0.3s ease;
         white-space: nowrap;
         &:hover {
-            color: #00AEEE;
+            color: #00aeee;
         }
         &--active {
-            color: #00AEEE;
-            border-bottom: 2px solid #00AEEE;
+            color: #00aeee;
+            border-bottom: 2px solid #00aeee;
         }
         &--disabled {
             cursor: not-allowed;
-            color: #D8D8D8;
-            border-bottom: 2px solid #D8D8D8;
+            color: #d8d8d8;
+            border-bottom: 2px solid #d8d8d8;
             &:hover {
-                color: #D8D8D8;
-                border-bottom: 2px solid #D8D8D8;
+                color: #d8d8d8;
+                border-bottom: 2px solid #d8d8d8;
             }
         }
     }
@@ -690,22 +832,22 @@ $class-promerties: (
     background: #bdbdbd;
     border-radius: 20px;
     &--red {
-        background: #FF2020;
+        background: #ff2020;
     }
     &--green {
-        background: #00C853;
+        background: #00c853;
     }
     &--yellow {
-        background: #FFC107;
+        background: #ffc107;
     }
     &--blue {
-        background: #00AEEE;
+        background: #00aeee;
     }
     &--gray {
-        background: #9A9A9A;
+        background: #9a9a9a;
     }
     &--red-green {
-        background: linear-gradient(90deg, #FF2020 50%, #00C853 50%);
+        background: linear-gradient(90deg, #ff2020 50%, #00c853 50%);
     }
 }
 .badge {
@@ -716,33 +858,33 @@ $class-promerties: (
     line-height: 16px;
     border-radius: 4px;
     &--red {
-        background: #FF2020;
-        color: #FFFFFF;
+        background: #ff2020;
+        color: #ffffff;
     }
     &--green {
-        background: #00C853;
-        color: #FFFFFF;
+        background: #00c853;
+        color: #ffffff;
     }
     &--yellow {
-        background: #FFC107;
-        color: #FFFFFF;
+        background: #ffc107;
+        color: #ffffff;
     }
     &--blue {
-        background: #00AEEE;
-        color: #FFFFFF;
+        background: #00aeee;
+        color: #ffffff;
     }
     &--gray {
-        background: #9A9A9A;
-        color: #FFFFFF;
+        background: #9a9a9a;
+        color: #ffffff;
     }
     &--red-green {
-        background: linear-gradient(90deg, #FF2020 50%, #00C853 50%);
-        color: #FFFFFF;
+        background: linear-gradient(90deg, #ff2020 50%, #00c853 50%);
+        color: #ffffff;
     }
     // si esta colocada la clase badge--striped se le hace un opacity .8 a los elementos impares
     &--stripe {
         &:nth-child(even) {
-            opacity: .8;
+            opacity: 0.8;
         }
     }
 }
@@ -752,8 +894,17 @@ h1 {
 }
 @for $num from 0 through 9 {
     @for $decimal from 0 through 9 {
-        .scale-#{$num}-#{$decimal}{
-            transform: scale($num+calc($decimal/10));
+        .scale-#{$num}-#{$decimal} {
+            transform: scale($num + calc($decimal/10));
         }
+    }
+}
+
+.controls {
+    &__title {
+        color: #000;
+        font-size: 22px;
+        font-weight: 600;
+        margin: 0;
     }
 }

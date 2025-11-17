@@ -1,76 +1,78 @@
 <script setup>
-    import SideBar from '../SideBar/index.vue'
-    import TopBar from '../TopBar/index.vue'
-    import { useRoute, useRouter, onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
+import { onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router';
+import SideBar from '../SideBar/index.vue';
+import TopBar from '../TopBar/index.vue';
 
-    import { reactive, ref, watch, watchEffect } from 'vue'
+import { inject, reactive, ref, watchEffect } from 'vue';
 
-    const route = useRoute()
-    const router = useRouter()
-    const validRoutes = reactive([])
-    window.route = route
-    window.router = router
+const $globalState = inject('$globalState');
 
-    window.validRoutes = validRoutes
-    const breadcrumbBefore = ref([])
-    const breadcrumbAfter = ref([])
-    
-    // Si se cambia de ruta, limpio el breadcrumb
-    onBeforeRouteUpdate(async (to, from) => {
-        breadcrumbBefore.value.splice(0, breadcrumbBefore.value.length)
-        breadcrumbAfter.value.splice(0, breadcrumbAfter.value.length)
-    })
-    const injectBreadcrumb = (values, location = 'before') => {
-        if ( Object.prototype.toString.call(values) !== '[object Array]' ) {
-            values = [values]
+const route = useRoute();
+const router = useRouter();
+const validRoutes = reactive([]);
+window.route = route;
+window.router = router;
+
+window.validRoutes = validRoutes;
+const breadcrumbBefore = ref([]);
+const breadcrumbAfter = ref([]);
+
+// Si se cambia de ruta, limpio el breadcrumb
+onBeforeRouteUpdate(async (to, from) => {
+    breadcrumbBefore.value.splice(0, breadcrumbBefore.value.length);
+    breadcrumbAfter.value.splice(0, breadcrumbAfter.value.length);
+});
+const injectBreadcrumb = (values, location = 'before') => {
+    if (Object.prototype.toString.call(values) !== '[object Array]') {
+        values = [values];
+    }
+    if (location == 'before') {
+        breadcrumbBefore.value.push(...values);
+    } else {
+        breadcrumbAfter.value.push(...values);
+    }
+};
+const injectBreadcrumbBefore = (values) => {
+    injectBreadcrumb(values, 'before');
+};
+const injectBreadcrumbAfter = (values) => {
+    injectBreadcrumb(values, 'after');
+};
+const clearInjectBreadcrumb = () => {
+    breadcrumbBefore.value.splice(0, breadcrumbBefore.value.length);
+    breadcrumbAfter.value.splice(0, breadcrumbAfter.value.length);
+};
+const clearInjectBreadcrumbBefore = () => {
+    breadcrumbBefore.value.splice(0, breadcrumbBefore.value.length);
+};
+const clearInjectBreadcrumbAfter = () => {
+    breadcrumbAfter.value.splice(0, breadcrumbAfter.value.length);
+};
+window.injectBreadcrumb = injectBreadcrumb;
+window.injectBreadcrumbBefore = injectBreadcrumbBefore;
+window.injectBreadcrumbAfter = injectBreadcrumbAfter;
+window.clearInjectBreadcrumb = clearInjectBreadcrumb;
+window.clearInjectBreadcrumbBefore = clearInjectBreadcrumbBefore;
+window.clearInjectBreadcrumbAfter = clearInjectBreadcrumbAfter;
+
+watchEffect(() => {
+    validRoutes.splice(0, validRoutes.length);
+    route.matched.forEach((item) => {
+        if (item.meta && item.meta.displayName && !item.meta.omitInBreadcrumb) {
+            Object.keys(route.params).forEach((key) => {
+                item.path = item.path.replace(':' + key, route.params[key]);
+            });
+            validRoutes.push(item);
         }
-        if (location == 'before') {
-            breadcrumbBefore.value.push(...values)
-        } else {
-            breadcrumbAfter.value.push(...values)
-        }
-    }
-    const injectBreadcrumbBefore = (values) => {
-        injectBreadcrumb(values, 'before')
-    }
-    const injectBreadcrumbAfter = (values) => {
-        injectBreadcrumb(values, 'after')
-    }
-    const clearInjectBreadcrumb = () => {
-        breadcrumbBefore.value.splice(0, breadcrumbBefore.value.length)
-        breadcrumbAfter.value.splice(0, breadcrumbAfter.value.length)
-    }
-    const clearInjectBreadcrumbBefore = () => {
-        breadcrumbBefore.value.splice(0, breadcrumbBefore.value.length)
-    }
-    const clearInjectBreadcrumbAfter = () => {
-        breadcrumbAfter.value.splice(0, breadcrumbAfter.value.length)
-    }
-    window.injectBreadcrumb       = injectBreadcrumb
-    window.injectBreadcrumbBefore = injectBreadcrumbBefore
-    window.injectBreadcrumbAfter  = injectBreadcrumbAfter
-    window.clearInjectBreadcrumb       = clearInjectBreadcrumb
-    window.clearInjectBreadcrumbBefore = clearInjectBreadcrumbBefore
-    window.clearInjectBreadcrumbAfter  = clearInjectBreadcrumbAfter
-
-    watchEffect(() => {
-        validRoutes.splice(0, validRoutes.length)
-        route.matched.forEach((item) => {
-            if (item.meta && item.meta.displayName && !item.meta.omitInBreadcrumb) {
-                Object.keys(route.params).forEach((key) => {
-                    item.path = item.path.replace(':' + key, route.params[key])
-                })
-                validRoutes.push(item)
-            }
-        })
-        // primero tengo que invertir el array para que quede en el orden correcto
-        breadcrumbBefore.value.reverse().forEach((item) => {
-            validRoutes.unshift(item)
-        })
-        breadcrumbAfter.value.forEach((item) => {
-            validRoutes.push(item)
-        })
-    })
+    });
+    // primero tengo que invertir el array para que quede en el orden correcto
+    breadcrumbBefore.value.reverse().forEach((item) => {
+        validRoutes.unshift(item);
+    });
+    breadcrumbAfter.value.forEach((item) => {
+        validRoutes.push(item);
+    });
+});
 </script>
 
 <template>
@@ -79,61 +81,48 @@
         <div class="main-content">
             <div class="main-content__content">
                 <div class="breadcrumb">
-                    <span v-for="(matched, idx) in validRoutes" :key="idx">
-                        <template v-if="idx < validRoutes.length - 1">
-                            <RouterLink :to="matched.path" class="breadcrumb__item">{{ matched.meta.displayName }}</RouterLink>
-                            <span class="breadcrumb__divider" v-if="idx != Object.keys(validRoutes).length - 1"> / </span>
-                        </template>
-                        <template v-else>
-                            <span class="breadcrumb__item">{{ matched.meta.displayName }}</span>
-                        </template>
-                    </span>
-                </div>  
-                <slot></slot>
+                    <div>
+                        <span v-for="(matched, idx) in validRoutes" :key="idx">
+                            <template v-if="idx < validRoutes.length - 1">
+                                <RouterLink
+                                    :to="matched.path"
+                                    class="breadcrumb__item"
+                                    >{{ matched.meta.displayName }}</RouterLink
+                                >
+                                <span
+                                    class="breadcrumb__divider"
+                                    v-if="
+                                        idx !=
+                                        Object.keys(validRoutes).length - 1
+                                    "
+                                >
+                                    /
+                                </span>
+                            </template>
+                            <template v-else>
+                                <span class="breadcrumb__item">{{
+                                    matched.meta.displayName
+                                }}</span>
+                            </template>
+                        </span>
+                    </div>
+                </div>
+                <div>
+                    <slot></slot>
+                </div>
             </div>
+            <div
+                class="main-content__overlay"
+                :class="{
+                    'main-content__overlay--show':
+                        $globalState.sidebar.show.value ==
+                        'side-bar__wrapper--show',
+                }"
+                @click="$globalState.sidebar.show.toggle"
+            ></div>
             <SideBar></SideBar>
         </div>
     </div>
 </template>
 
-<style lang="scss" scoped>
-    .main-content {
-        display: flex;
-        flex-direction: row;
-        flex-grow: 1;
-        position: relative;
-        height: calc(100vh - 60px);
-    }
-    .main-content__content {
-        flex-grow: 1;
-        background-color: #ecf0f1;
-        position: relative;
-        order: 2;
-        overflow-y: auto;
-        padding: 40px 32px;
-    }
-    .breadcrumb {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        box-sizing: border-box;
-        padding: 5px 32px;
-        background-color: transparent;
-        &__item {
-            color: var(--darkgray);
-            font-size: 13px;
-            font-weight: 500;
-            text-decoration: none;
-            transition: all .3s ease;
-        }
-        &__divider {
-            color: var(--darkgray);
-            font-size: 14px;
-            font-weight: 500;
-            margin: 0 5px;
-            line-height: 13px;
-        }
-    }
-
-</style>
+<style lang="scss" scoped></style>

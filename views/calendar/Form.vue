@@ -1,4 +1,3 @@
-
 <template>
     <h3>Articulo:</h3>
     <div class="grid-2 gap-15">
@@ -20,19 +19,16 @@
 </template>
 
 <script setup>
-    import { reactive, ref } from "@vue/reactivity";
-
-    const props = defineProps({
-        form: {
-            type: Object,
-            required: true,
-        },
-        errors: {
-            type: Object,
-            required: true,
-        },
-    })
+const props = defineProps({
+    form: {
+        type: Object,
+        required: true,
+    },
+    errors: {
+        type: Object,
+        required: true,
+    },
+});
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

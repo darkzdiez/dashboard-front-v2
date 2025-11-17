@@ -1,31 +1,32 @@
 <template>
     <SectionHeader>
         <template #title>
-            Permisos
+            <button
+                @click="$goBack('/configurations')"
+                class="btn-back"
+                type="button"
+            >
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <span>Permisos</span>
         </template>
         <template #buttons>
-            <router-link
-                class="btn btn--yellow"
-                to="/configurations"
-            >
-                <i class="fas fa-arrow-left"></i> Volver
-            </router-link>
             <button
-                class="btn btn--gray"
-                @click="pagination.syncData()"
-            >
-                <i class="fas fa-sync-alt"></i> Actualizar
-            </button>
-            <router-link
-                to="/permission/trash"
-                class="btn btn--yellow"
+                class="btn btn--darkgray-outline"
+                @click="pagination.trash.value = true"
+                v-if="!pagination.trash.value"
             >
                 <i class="fas fa-trash-alt"></i> Papelera
-            </router-link>
-            <router-link
-                to="/permission/add"
-                class="btn btn--green"
+            </button>
+            <button
+                class="btn btn--darkgray-outline"
+                @click="pagination.trash.value = false"
+                v-if="pagination.trash.value"
             >
+                <i class="fas fa-undo"></i>
+                Salir de la Papelera
+            </button>
+            <router-link to="/permission/add" class="btn btn--darkgray">
                 <i class="fas fa-plus"></i> Añadir
             </router-link>
         </template>
@@ -37,28 +38,108 @@
                 <th>Nombre</th>
                 <th>Guard</th>
                 <th>Descipción</th>
+                <th>Roles</th>
+                <th>Tipos de Organización</th>
                 <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
+            <tr class="table__search">
+                <td>
+                    <input
+                        type="text"
+                        v-model="pagination.filters.group_prefix"
+                        @keyup.enter="pagination.applyFilters"
+                    />
+                </td>
+                <td>
+                    <input
+                        type="text"
+                        v-model="pagination.filters.name"
+                        @keyup.enter="pagination.applyFilters"
+                    />
+                </td>
+                <td>
+                    <input
+                        type="text"
+                        v-model="pagination.filters.guard_name"
+                        @keyup.enter="pagination.applyFilters"
+                    />
+                </td>
+                <td>
+                    <input
+                        type="text"
+                        v-model="pagination.filters.description"
+                        @keyup.enter="pagination.applyFilters"
+                    />
+                </td>
+                <td></td>
+                <td></td>
+                <td>
+                    <div class="btns">
+                        <button
+                            class="btn btn--darkgray"
+                            @click="pagination.applyFilters"
+                        >
+                            <i class="fas fa-search"></i>
+                        </button>
+                        <button
+                            class="btn btn--gray"
+                            @click="pagination.clearFilters"
+                        >
+                            <i class="fas fa-eraser"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
             <tr v-for="(item, key) in pagination.paginator.data" :key="key">
                 <td>{{ item.group_prefix }}</td>
                 <td>{{ item.name }}</td>
                 <td>{{ item.guard_name }}</td>
                 <td>{{ item.description }}</td>
                 <td>
+                    <router-link
+                        class="me-5"
+                        :to="'/group/' + group.uuid + '/edit'"
+                        v-for="(group, gkey) in item.groups"
+                        >{{ group.name }}</router-link
+                    >
+                </td>
+                <td>
+                    <router-link
+                        class="me-5"
+                        :to="
+                            '/organization-type/' +
+                            organization_type.uuid +
+                            '/edit'
+                        "
+                        v-for="(
+                            organization_type, gkey
+                        ) in item.organization_types"
+                        >{{ organization_type.name }}</router-link
+                    >
+                </td>
+                <td>
                     <div class="btns">
                         <router-link
-                            :to="'/permission/' + item.id + '/edit'"
-                            class="btn btn--green"
+                            :to="'/permission/' + item.uuid + '/edit'"
+                            class="btn btn--darkgray"
                         >
                             <i class="fas fa-edit"></i>
                         </router-link>
                         <button
-                            class="btn btn--red"
-                            @click="onDelete(item.id)"
+                            class="btn btn--gray"
+                            @click="item.deleteItem"
+                            v-if="!pagination.trash.value"
                         >
                             <i class="fas fa-trash"></i>
+                        </button>
+                        <button
+                            class="btn btn--gray"
+                            @click="item.restoreItem"
+                            v-else
+                        >
+                            <i class="fas fa-trash-restore"></i>
                         </button>
                     </div>
                 </td>
@@ -72,40 +153,21 @@
 </template>
 
 <script setup>
-    import { reactive } from 'vue'
-    import { useRoute, useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router';
 
-    const route = useRoute()
-    const router = useRouter()
+const route = useRoute();
+const router = useRouter();
 
-    const exportData = () => {
-        alert('Característica no implementada')
-    }
-    const importData = () => {
-        alert('Característica no implementada')
-    }
+const pagination = dataPaginator({
+    urlBase: new URL(window.public_path + '/api/permission'),
+    filtersKeys: ['group_prefix', 'name', 'guard_name', 'description'],
+    config: {
+        cachePrefix: 'shipment',
+        deleteEnpoint: window.public_path + '/api/permission/delete/${uuid}',
+        restoreEnpoint: window.public_path + '/api/permission/restore/${uuid}',
+    },
+});
 
-    const pagination = dataPaginator({
-        urlBase: new URL(window.public_path + '/api/permission'),
-        filtersKeys: ['code', 'name', 'description']        
-    })
-
-    pagination.syncData()
-
-
-    const generateSeeder = () => {
-        if (confirm('¿Está seguro de generar el seeder?')) {
-            httpRequest({
-                url: window.public_path + '/api/permission/generate-seed-from-data-model',
-                method: 'POST'
-            })
-            .then((data) => {
-                alert('Seeder generado correctamente')
-            })
-            .catch((error) => {})
-        }
-    }
+pagination.syncData();
 </script>
-<style lang="scss" scoped>
-    
-</style>
+<style lang="scss" scoped></style>

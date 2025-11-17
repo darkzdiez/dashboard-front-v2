@@ -19,17 +19,18 @@ import module from 'dashboard-front-v2/index' and watch changes realtime recursi
 import './assets/main.scss'
 */
 
-import SectionHeader from './components/SectionHeader.vue'
-import Main      from './components/Layouts/Main.vue'
-import Dropdown  from './components/Dropdown/index.vue'
-import Paginator from './components/Paginator/index.vue'
-import Notes       from './components/Notes/index.vue'
-import ButtonAlert from './components/Notes/ButtonAlert.vue'
-import { InputsRegister } from './components/Inputs/index'
-import { BoxesRegister }  from './components/Boxes/index.js'
-import Modal from './components/Modal/index.vue'
-import TopBarJobs from './components/TopBar/TopBarJobs.vue'
-
+import { BoxesRegister } from './components/Boxes/index.js';
+import Dropdown from './components/Dropdown/index.vue';
+import { InputsRegister } from './components/Inputs/index';
+import Main from './components/Layouts/Main.vue';
+import Modal from './components/Modal/index.vue';
+import ButtonAlert from './components/Notes/ButtonAlert.vue';
+import Notes from './components/Notes/index.vue';
+import Paginator from './components/Paginator/index.vue';
+import SectionHeader from './components/SectionHeader.vue';
+import TableTh from './components/Table/TableTh.vue';
+import TopBarJobs from './components/TopBar/TopBarJobs.vue';
+import TopBarNews from './components/TopBar/TopBarNews.vue';
 
 const dashboardFront = ({
     app,
@@ -46,9 +47,8 @@ const dashboardFront = ({
     onBeforeRouteLeave,
     onBeforeRouteUpdate,
     RouterLink,
-    RouterView
+    RouterView,
 }) => {
-    
     window.appDependencies = {
         app,
         router,
@@ -64,30 +64,34 @@ const dashboardFront = ({
         onBeforeRouteLeave,
         onBeforeRouteUpdate,
         RouterLink,
-        RouterView
-    }
+        RouterView,
+    };
 
-    app.component('SectionHeader', SectionHeader)
-    app.component('Notes', Notes)
-    app.component('ButtonAlert', ButtonAlert)
-    app.component('Dropdown', Dropdown)
-    
-    app.component('Main', Main)
-    app.component('Paginator', Paginator)
-    app.component('Modal', Modal)
-    
-    app.component('TopBarJobs', TopBarJobs)
-    
-    InputsRegister(app)
-    BoxesRegister(app)
+    app.component('SectionHeader', SectionHeader);
+    app.component('Notes', Notes);
+    app.component('ButtonAlert', ButtonAlert);
+    app.component('Dropdown', Dropdown);
 
-    window.public_path = document.head.querySelector('meta[name="public-path"]')
+    app.component('Main', Main);
+    app.component('Paginator', Paginator);
+    app.component('Modal', Modal);
+
+    app.component('TopBarJobs', TopBarJobs);
+    app.component('TopBarNews', TopBarNews);
+    app.component('TableTh', TableTh);
+
+    InputsRegister(app);
+    BoxesRegister(app);
+
+    window.public_path = document.head.querySelector(
+        'meta[name="public-path"]'
+    );
     if (window.public_path) {
-        window.public_path = window.public_path.content.replace(/\/$/, '')
+        window.public_path = window.public_path.content.replace(/\/$/, '');
     } else {
-        window.public_path = ''
+        window.public_path = '';
     }
-    
+
     window.todayFormatted = () => {
         // Obtener la fecha actual
         let hoy = new Date();
@@ -99,32 +103,38 @@ const dashboardFront = ({
 
         // Añadir un cero delante si el día o el mes son menores que 10
         if (dia < 10) {
-        dia = "0" + dia;
+            dia = '0' + dia;
         }
         if (mes < 10) {
-        mes = "0" + mes;
+            mes = '0' + mes;
         }
 
         // Formatear la fecha como DD/MM/YYYY
-        let fecha = dia + "/" + mes + "/" + año;
+        let fecha = dia + '/' + mes + '/' + año;
 
         // Devolver la fecha
         return fecha;
-    }
-    app.provide('todayFormatted', window.todayFormatted)
+    };
+    app.provide('todayFormatted', window.todayFormatted);
 
     window.httpRequest = ({
         url,
         method = 'GET',
         data,
         errors,
-        displayModalErrors = true
+        displayModalErrors = true,
+        clearErrors = true,
     }) => {
-        if (errors && Object.prototype.toString.call(errors) === '[object Object]') {
-            // clear all errors
-            Object.keys(errors).forEach(key => {
-                errors[key].splice(0, errors[key].length)
-            })
+        if (clearErrors) {
+            if (
+                errors &&
+                Object.prototype.toString.call(errors) === '[object Object]'
+            ) {
+                // clear all errors
+                Object.keys(errors).forEach((key) => {
+                    errors[key].splice(0, errors[key].length);
+                });
+            }
         }
         return new Promise((resolve, reject) => {
             fetch(url, {
@@ -134,68 +144,185 @@ const dashboardFront = ({
                     'X-Requested-With': 'XMLHttpRequest',
                 },
             })
-            .then((response) => {
-                const bodyData = response.json()
-                if (response.ok) {
-                    resolve(bodyData)
-                }
-                // Código de estado: 401 Unauthorized
-                if (response.status == 401) {
-                    console.log('acceso denegado')
-                    router.push('/login')
-                    reject(response)
-                }
-                // Código de estado: 405 Method Not Allowed
-                if (response.status == 405) {
-                    bodyData.then((data) => {
-                        awesomeModal.error('Error', `
+                .then((response) => {
+                    // si la cabecera de la respuesta x-app-version es diferente a la versión actual
+                    let appVersion = response.headers.get('x-app-version');
+                    if (appVersion !== window.$globalState.real_version) {
+                        // Si la versión es diferente, forzamos la recarga de la página
+                        // dejamos 5 segundos para que el usuario vea el mensaje
+                        setTimeout(() => {
+                            // Forzamos la recarga de la página
+                            window.location.reload();
+                        }, 1000);
+                    }
+                    const bodyData = response.json();
+                    if (response.ok) {
+                        resolve(bodyData);
+                    }
+                    // Código de estado: 401 Unauthorized
+                    if (response.status == 401) {
+                        // console.log('acceso denegado')
+                        router.push('/login');
+                        reject(response);
+                    }
+                    // Código de estado: 405 Method Not Allowed
+                    if (response.status == 405) {
+                        bodyData.then((data) => {
+                            awesomeModal.error(
+                                'Error',
+                                `
                             <p>Ha ocurrido un error 405: Metodo no permitido.</p>
                             <p>${data.message}</p>
-                        `)
-                        reject(data)
-                    })
-                }
-                // Código de estado: 422 Unprocessable Content
-                if (response.status == 422) {
-                    // asignar errores
-                    // se debe resolver la promesa para obtener los datos
-                    bodyData.then((data) => {
-                        if (errors && Object.prototype.toString.call(errors) === '[object Object]') {
-                            Object.assign(errors, data.errors)
-                        } else {
-                        }
-                        if (displayModalErrors) {
-                            awesomeModal.error('Tiene errores en el formulario', `
-                                ${ '<ul style="border: 1px solid #F00; padding-top: 15px; padding-bottom: 15px; background-color: #ffb6b61f;">' + Object.keys(data.errors).map((key) => {
-                                    return data.errors[key].map((error) => {
-                                        return `<li class="mb-2" style="text-align: left; color: #F00;">${error}</li>`
-                                    }).join('')
-                                }).join('') + '</ul>' }
-                            `)
-                        }
-                        reject(data)
-                    })
-                }
-                // Código de estado: 500 Internal Server Error
-                if (response.status == 500) {
-                    bodyData.then((data) => {
-                        reject(data)
-                        awesomeModal.error('Error', `
-                            <p>Ha ocurrido un error inesperado.</p>
-                            <p>${data.message}</p>
-                        `)
-                    })
-                }
-                reject(response)
-                // throw new Error(response);
-            })
-        })
-    
-    }
-    
+                        `
+                            );
+                            reject(data);
+                        });
+                    }
+                    /**
+                     * Obtener los valores de meta name max-file-size y post-max-size
+                     */
+                    let maxFileSize = document.head.querySelector(
+                        'meta[name="max-file-size"]'
+                    );
+                    if (maxFileSize) {
+                        maxFileSize = maxFileSize.content;
+                    } else {
+                        maxFileSize = 0;
+                    }
+                    let postMaxSize = document.head.querySelector(
+                        'meta[name="post-max-size"]'
+                    );
+                    if (postMaxSize) {
+                        postMaxSize = postMaxSize.content;
+                    } else {
+                        postMaxSize = 0;
+                    }
+                    // Código de estado: 413 Content Too Large
+                    if (response.status == 413) {
+                        // console.log('archivo demasiado grande')
+                        // console.log(response)
+                        // console.log(bodyData)
+                        awesomeModal.error(
+                            'Error',
+                            `
+                        <p>Ha ocurrido un error 413: Contenido demasiado grande.</p>
+                        <p>Su archivo es demasiado grande, el tamaño máximo permitido es de ${maxFileSize}.</p>
+                    `
+                        );
+                        reject(null);
+                    }
+                    // Código de estado: 422 Unprocessable Content
+                    if (response.status == 422) {
+                        // asignar errores
+                        // se debe resolver la promesa para obtener los datos
+                        bodyData.then((data) => {
+                            if (
+                                errors &&
+                                Object.prototype.toString.call(errors) ===
+                                    '[object Object]'
+                            ) {
+                                Object.assign(errors, data.errors);
+                            } else {
+                            }
+                            if (displayModalErrors) {
+                                awesomeModal.error(
+                                    'Tiene errores en el formulario',
+                                    `
+                                ${
+                                    '<ul style="border: 1px solid #F00; padding-top: 15px; padding-bottom: 15px; background-color: #ffb6b61f;">' +
+                                    Object.keys(data.errors)
+                                        .map((key) => {
+                                            return data.errors[key]
+                                                .map((error) => {
+                                                    return `<li class="mb-2" style="text-align: left; color: #F00;">${error}</li>`;
+                                                })
+                                                .join('');
+                                        })
+                                        .join('') +
+                                    '</ul>'
+                                }
+                            `
+                                );
+                            }
+                            // en los errores si uno de los errores contiene "finfo_file(): Argument #1 ($finfo) cannot be empty"
+                            // es porque el archivo es demasiado grande
+                            let hasFileTooLarge = false;
+                            // console.log(data.errors)
+                            for (const key in data.errors) {
+                                // console.log(key, Array.isArray(data.errors[key]), data.errors[key])
+                                // verificar si data.errors[key] es un array
+                                if (Array.isArray(data.errors[key])) {
+                                    data.errors[key].forEach((error) => {
+                                        if (
+                                            error.includes(
+                                                'finfo_file(): Argument #1 ($finfo) cannot be empty'
+                                            )
+                                        ) {
+                                            hasFileTooLarge = true;
+                                        }
+                                    });
+                                }
+                            }
+                            if (hasFileTooLarge) {
+                                awesomeModal.error(
+                                    'Error',
+                                    `
+                                <p>El formulario contiene un archivo demasiado grande.</p>
+                                <p>El tamaño máximo permitido es de ${maxFileSize}.</p>
+                            `
+                                );
+                            }
+                            reject(data);
+                        });
+                    }
+                    // Código de estado: 500 Internal Server Error
+                    if (response.status == 500) {
+                        // console.log(bodyData)
+                        // console.log('antes de resolver bodyData')
+                        bodyData
+                            .then((data) => {
+                                // console.log('error 500')
+                                // console.log(data)
+                                reject(data);
+                                if (displayModalErrors) {
+                                    awesomeModal.error(
+                                        'Error',
+                                        `
+                                <p>Ha ocurrido un error inesperado.</p>
+                                <p>${data.message}</p>
+                            `
+                                    );
+                                }
+                            })
+                            .catch((error) => {
+                                /*
+                        console.log([
+                            typeof error,
+                            error,
+                            typeof error.message,
+                            error.message,
+                            typeof error.bodyData,
+                            bodyData,
+                            response,
+                            response.body,
+                        ])
+                        */
+                                reject(error);
+                            });
+                    }
+                    // reject(response)
+                    // throw new Error(response);
+                })
+                .catch((error) => {
+                    // console.log('dentro del catch')
+                    // console.log(error)
+                    reject(error);
+                });
+        });
+    };
 
     window.formatSeconds = (seconds) => {
-        seconds = parseInt(seconds)
+        seconds = parseInt(seconds);
         var horas = Math.floor(seconds / 3600); // obtener horas
         var minutos = Math.floor((seconds % 3600) / 60); // obtener minutos
         var segundos = seconds % 60; // obtener segundos
@@ -204,152 +331,215 @@ const dashboardFront = ({
         if (minutos < 10) minutos = '0' + minutos;
         if (segundos < 10) segundos = '0' + segundos;
         return horas + ':' + minutos + ':' + segundos; // devolver el resultado
-    }
-    app.provide('formatSeconds', window.formatSeconds)
+    };
+    app.provide('formatSeconds', window.formatSeconds);
 
     // public asset or public path or path asset
     window.pathAsset = (path) => {
-        return `${window.public_path}/${path}`
-    }
-    window.toggle = ( value, trueValue, falseValue ) => {
+        return `${window.public_path}/${path}`;
+    };
+    window.toggle = (value, trueValue, falseValue) => {
         if (value === trueValue) {
-            return falseValue
+            return falseValue;
         }
-        return trueValue
-    }
+        return trueValue;
+    };
 
     window.$globalState.auth = {
         user: {},
         status: 'error',
-    }
-    window.$globalState.render = false
+        config: {},
+    };
+    window.$globalState.render = false;
 
     window.userCan = (permission) => {
-        if ( window?.$globalState?.auth?.status == "success" ) {
-            if ( window?.$globalState?.auth?.user?.permissions[permission] && window?.$globalState?.auth?.user?.permissions[permission]?.access == true ) {
-                return true
-            }
-            // puede ser que el permiso este escrito de esta manera pedido-* y se debe verificar si tiene acceso a pedido-crear, pedido-eliminar, pedido-editar, etc, al menos a uno
-            let permissions = Object.keys(window?.$globalState?.auth?.user?.permissions)
-            let exp = permission.replace('*', '')
-            let hasAccess = false
-            permissions.forEach((p) => {
-                if ( p.startsWith(exp) ) {
-                    if ( window?.$globalState?.auth?.user?.permissions[p].access == true ) {
-                        hasAccess = true
+        if (window?.$globalState?.auth?.status == 'success') {
+            if (permission.includes('*')) {
+                let exp = permission.replace('*', '');
+                let permissions = Object.keys(
+                    window?.$globalState?.auth?.user?.permissions
+                );
+                let hasAccess = false;
+                permissions.forEach((p) => {
+                    if (p.startsWith(exp)) {
+                        if (
+                            window?.$globalState?.auth?.user?.permissions[p]
+                                .access === true
+                        ) {
+                            hasAccess = true;
+                        }
                     }
-                }
-            })
-            return hasAccess
+                });
+                return hasAccess;
+            } else {
+                return (
+                    window?.$globalState?.auth?.user?.permissions[permission]
+                        ?.access === true
+                );
+            }
         }
-    }
+    };
     $globalState.sidebar = {
         // side-bar__wrapper--relative
         // side-bar__wrapper--absolute
         position: {
             value: 'side-bar__wrapper--absolute',
             toggle() {
-                this.value = toggle(this.value, 'side-bar__wrapper--relative', 'side-bar__wrapper--absolute')
-                localStorage.setItem('sidebar-position', this.value)
-            }
+                this.value = toggle(
+                    this.value,
+                    'side-bar__wrapper--relative',
+                    'side-bar__wrapper--absolute'
+                );
+                localStorage.setItem('sidebar-position', this.value);
+            },
         },
         // side-bar__wrapper--left
         // side-bar__wrapper--right
         place: {
             value: 'side-bar__wrapper--left',
             toggle() {
-                this.value = toggle(this.value, 'side-bar__wrapper--left', 'side-bar__wrapper--right')
-                localStorage.setItem('sidebar-place', this.value)
-            }
+                this.value = toggle(
+                    this.value,
+                    'side-bar__wrapper--left',
+                    'side-bar__wrapper--right'
+                );
+                localStorage.setItem('sidebar-place', this.value);
+            },
         },
         // side-bar__wrapper--show
         // side-bar__wrapper--hide
         show: {
             value: 'side-bar__wrapper--hide',
             toggle() {
-                this.value = toggle(this.value, 'side-bar__wrapper--show', 'side-bar__wrapper--hide')
-                localStorage.setItem('sidebar-show', this.value)
-            }
-        }
-    }
-    $globalState.sidebar.position.value = localStorage.getItem('sidebar-position') || $globalState.sidebar.position.value
-    $globalState.sidebar.place.value    = localStorage.getItem('sidebar-place')    || $globalState.sidebar.place.value
-    $globalState.sidebar.show.value     = localStorage.getItem('sidebar-show')     || $globalState.sidebar.show.value
+                this.value = toggle(
+                    this.value,
+                    'side-bar__wrapper--show',
+                    'side-bar__wrapper--hide'
+                );
+                localStorage.setItem('sidebar-show', this.value);
+            },
+        },
+    };
+    $globalState.sidebar.position.value =
+        localStorage.getItem('sidebar-position') ||
+        $globalState.sidebar.position.value;
+    $globalState.sidebar.place.value =
+        localStorage.getItem('sidebar-place') ||
+        $globalState.sidebar.place.value;
+    $globalState.sidebar.show.value =
+        localStorage.getItem('sidebar-show') || $globalState.sidebar.show.value;
 
-    window.appInstance = app
+    window.appInstance = app;
     const logout = () => {
-        let modal = awesomeModal.loading()
+        let modal = awesomeModal.loading();
         httpRequest({
             url: window.public_path + '/api/logout',
-            method: 'GET'
+            method: 'GET',
         })
-        .then((data) => {
-            modal.close()
-            window.$globalState.auth.status = 'error'
-            router.push('/login')
-        })
-        .catch((error) => {
-            modal.close()
-        })
-    
-    }
-    window.logout = logout
-    
-    app.provide('$globalState', window.$globalState)
+            .then((data) => {
+                modal.close();
+                window.$globalState.auth.status = 'error';
+                router.push('/login');
+            })
+            .catch((error) => {
+                modal.close();
+            });
+    };
+    window.logout = logout;
+
+    app.provide('$globalState', window.$globalState);
+
+    window.$goBack = (defaultRoute = null) => {
+        if (window.history.state.back) {
+            router.go(-1);
+        } else {
+            router.push(defaultRoute);
+        }
+    };
+    app.provide('$goBack', window.$goBack);
+    app.config.globalProperties.$goBack = window.$goBack;
     //app.config.globalProperties.$globalState = window.$globalState
-    
+
     window.verifyAuth = async () => {
         return new Promise((resolve, reject) => {
             httpRequest({
                 url: window.public_path + '/api/check-auth',
-                method: 'GET'
+                method: 'GET',
             })
-            .then((data) => {
-                if (data.status == 'error') {
-                    window.$globalState.auth.status = 'error'
-                    window.$globalState.render = true
-                    awesomeModal.closeAll()
-                    // URL accedible sin autenticación
-                    let URLs = [
-                        '/login',
-                        '/register',
-                        '/recover-password',
-                        '/password-reset'
-                    ]
-                    if (!URLs.includes(router.currentRoute.value.path)) {
-                        router.push('/login')
+                .then((data) => {
+                    if (data.status == 'error') {
+                        window.$globalState.auth.status = 'error';
+                        window.$globalState.render = true;
+                        awesomeModal.closeAll();
+                        // URL accedible sin autenticación
+                        let URLs = [
+                            '/login',
+                            '/register',
+                            '/recover-password',
+                            '/password-reset',
+                            '/lista-de-empaque-f4ak74945yklhesf03209uerj093u40934g',
+                        ];
+                        if (!URLs.includes(router.currentRoute.value.path)) {
+                            router.push('/login');
+                        }
+                        resolve(false);
+                        return;
                     }
-                    resolve(false)
-                    return
-                }
-                Object.assign(window.$globalState.auth.user, data.user)
-                window.$globalState.auth.status = 'success'
-                window.$globalState.render = true
-                resolve(true)
-            })
-            .catch((error) => {})
-        })
-    }
-    window.verifyAuth()
+                    Object.assign(window.$globalState.auth.user, data.user);
+                    Object.assign(window.$globalState.auth.config, data.config);
+                    //window.dataLayer.push({
+                    // window.dataLayer[0]['event'] = 'login',
+                    ((window.dataLayer[0]['appUserId'] = data.user.id),
+                        (window.dataLayer[0]['appUserName'] = data.user.name),
+                        (window.dataLayer[0]['appUserEmail'] = data.user.email),
+                        (window.dataLayer[0]['appUserUsername'] =
+                            data.user.username),
+                        (window.dataLayer[0]['appUserOrganizationID'] =
+                            data.user.organization_id),
+                        (window.dataLayer[0]['appUserOrganizationName'] =
+                            data.user.organization_name),
+                        (window.dataLayer[0]['appUserOrganizationTypeID'] =
+                            data.user.organization_type_id),
+                        (window.dataLayer[0]['appUserOrganizationTypeName'] =
+                            data.user.organization_type_name),
+                        //})
+                        (window.$globalState.auth.status = 'success'));
+                    window.$globalState.render = true;
+
+                    // si window.$globalState.auth.user.must_change_password es true
+                    if (
+                        window.$globalState.auth.user.must_change_password &&
+                        router.currentRoute.value.path != '/profile'
+                    ) {
+                        console.log('debe cambiar la contraseña');
+                        window.location.href = '/profile';
+                    }
+
+                    resolve(true);
+                })
+                .catch((error) => {});
+        });
+    };
+    window.verifyAuth();
     app.mixin({
         methods: {
             pathAsset(path) {
                 // remove first slash
-                path = path.replace(/^\//, '')
-                return `${window.public_path}/${path}`
+                path = path.replace(/^\//, '');
+                return `${window.public_path}/${path}`;
             },
             logout() {
-                return window.logout()
+                return window.logout();
             },
             formatSeconds(seconds) {
-                return window.formatSeconds(seconds)
+                return window.formatSeconds(seconds);
             },
             todayFormatted() {
-                return window.todayFormatted()
-            }
-        }
-    })
-    
+                return window.todayFormatted();
+            },
+        },
+    });
+
     /*
     en vue 3 no se puede usar el filters globalProperties
     en si lugar se recomienda usar computed
@@ -361,57 +551,62 @@ const dashboardFront = ({
     */
 
     window.toCurrency = (numero, decimales = 2) => {
-        let separadorDecimal = document.head.querySelector('meta[name="decimal-separator"]')
+        let separadorDecimal = document.head.querySelector(
+            'meta[name="decimal-separator"]'
+        );
         if (separadorDecimal) {
-            separadorDecimal = separadorDecimal.content
+            separadorDecimal = separadorDecimal.content;
         } else {
-            separadorDecimal = ",";
+            separadorDecimal = ',';
         }
-        let separadorMiles   = document.head.querySelector('meta[name="thousands-separator"]')
+        let separadorMiles = document.head.querySelector(
+            'meta[name="thousands-separator"]'
+        );
         if (separadorMiles) {
-            separadorMiles = separadorMiles.content
+            separadorMiles = separadorMiles.content;
         } else {
-            separadorMiles = ".";
+            separadorMiles = '.';
         }
         let partes, array;
-    
-        if ( !isFinite(numero) || isNaN(numero = parseFloat(numero)) ) {
-            return "";
+
+        if (!isFinite(numero) || isNaN((numero = parseFloat(numero)))) {
+            return '';
         }
-    
+
         // Redondeamos
-        if ( !isNaN(parseInt(decimales)) ) {
+        if (!isNaN(parseInt(decimales))) {
             if (decimales >= 0) {
                 numero = numero.toFixed(decimales);
             } else {
                 numero = (
-                    Math.round(numero / Math.pow(10, Math.abs(decimales))) * Math.pow(10, Math.abs(decimales))
+                    Math.round(numero / Math.pow(10, Math.abs(decimales))) *
+                    Math.pow(10, Math.abs(decimales))
                 ).toFixed();
             }
         } else {
             numero = numero.toString();
         }
-    
+
         // Damos formato
-        partes = numero.split(".", 2);
-        array = partes[0].split("");
-        for (var i=array.length-3; i>0 && array[i-1]!=="-"; i-=3) {
+        partes = numero.split('.', 2);
+        array = partes[0].split('');
+        for (var i = array.length - 3; i > 0 && array[i - 1] !== '-'; i -= 3) {
             array.splice(i, 0, separadorMiles);
         }
-        numero = array.join("");
-    
-        if (partes.length>1) {
+        numero = array.join('');
+
+        if (partes.length > 1) {
             numero += separadorDecimal + partes[1];
         }
-    
+
         return numero;
-    }
+    };
     app.config.globalProperties.$filters = {
         toCurrency(numero, decimales = 2) {
-            return window.toCurrency(numero, decimales)
-        }
-    }
-    app.config.globalProperties.userCan = window.userCan
+            return window.toCurrency(numero, decimales);
+        },
+    };
+    app.config.globalProperties.userCan = window.userCan;
 
     window.dataPaginator = ({
         urlBase,
@@ -422,258 +617,327 @@ const dashboardFront = ({
             cachePrefix: null,
             deleteEnpoint: '', // example: window.public_path + '/api/pedido/delete/${uuid}'
             restoreEnpoint: '', // example: window.public_path + '/api/pedido/restore/${uuid}'
+            ignoreFilters: false,
         },
-        appendFormData = []
+        appendFormData = [],
     }) => {
         let query = null;
 
-        const trash = ref(false)
+        const trash = ref(false);
 
-        const page = ref(null)
+        const page = ref(null);
+
+        const route = useRoute();
 
         watch(page, () => {
-            sessionStorage.setItem('table-page-' + config.cachePrefix, page.value)
-        })
+            sessionStorage.setItem(
+                'table-page-' + config.cachePrefix,
+                page.value
+            );
+        });
 
         const sort = reactive({
             column: null,
             order: null,
-        })
+        });
 
         const sortBy = (column) => {
             if (column == sort.column) {
-                sort.order = toggle(sort.order, 'asc', 'desc')
+                sort.order = toggle(sort.order, 'asc', 'desc');
             } else {
-                sort.column = column
-                sort.order = 'asc'
+                sort.column = column;
+                sort.order = 'asc';
             }
-            syncData()
-        }
+            syncData();
+        };
         // defino la variable paginator, que se usará para almacenar los datos de la paginación
-        const paginator = reactive({})
-    
+        const paginator = reactive({
+            data: [],
+        });
+
         // defino la variable endpoint, que se usará para almacenar la url de la api
         const endpoint = reactive({
             dataUrl: urlBase,
             lastUrl: null,
-        })
-        
+        });
+
         // defino la variable filters, que se usará para almacenar los filtros de búsqueda
-        const filters = reactive({})
+        const filters = reactive({});
 
-        const permanentFilters = reactive([])
+        const permanentFilters = reactive([]);
 
-        const permanentSort = reactive([])
-    
+        const permanentSort = reactive([]);
+
         // defino la variable appliedFilters, que se usará para almacenar los filtros de búsqueda aplicados
-        const appliedFilters = reactive({})
-    
-        filtersKeys.forEach((key) => {
-            filters[key] = ''
-            appliedFilters[key] = ''        
-        })
+        const appliedFilters = reactive({});
 
-        if ( config.cachePrefix ) {
-            let storeFilters = sessionStorage.getItem('table-filters-' + config.cachePrefix)
-            if (storeFilters) {
-                storeFilters = JSON.parse(storeFilters)
+        filtersKeys.forEach((key) => {
+            filters[key] = '';
+            appliedFilters[key] = '';
+        });
+
+        if (config.cachePrefix) {
+            let storeFilters = null;
+            // console.log(Object.keys(route.query).length, Object.keys(route.query))
+            if (Object.keys(route.query).length != 0) {
+                sessionStorage.removeItem(
+                    'table-filters-' + config.cachePrefix
+                );
             } else {
-                storeFilters = {}
+                storeFilters = sessionStorage.getItem(
+                    'table-filters-' + config.cachePrefix
+                );
+            }
+            if (storeFilters) {
+                storeFilters = JSON.parse(storeFilters);
+            } else {
+                storeFilters = {};
             }
             filtersKeys.forEach((key) => {
-                if ( route.query['filters['+key+']'] ) {
-                    filters[key] = route.query['filters['+key+']']
-                    appliedFilters[key] = route.query['filters['+key+']']
-                } else if ( storeFilters[key] ) {
-                    filters[key] = storeFilters[key]
-                    appliedFilters[key] = storeFilters[key]
+                if (route.query['filters[' + key + ']']) {
+                    filters[key] = route.query['filters[' + key + ']'];
+                    appliedFilters[key] = route.query['filters[' + key + ']'];
+                } else if (storeFilters[key]) {
+                    filters[key] = storeFilters[key];
+                    appliedFilters[key] = storeFilters[key];
                 }
-            })
+            });
         }
 
         // se define la función applyFilters, que se ejecutará al hacer click en el botón de buscar
-        const applyFilters = ( params = {
-            prespreserveLastPage: false
-        }) => {
-            if ( !params.prespreserveLastPage ) {
-                sessionStorage.removeItem("table-page-pedido");
+        const applyFilters = (
+            params = {
+                prespreserveLastPage: false,
+            }
+        ) => {
+            if (!params.prespreserveLastPage) {
+                sessionStorage.removeItem('table-page-' + config.cachePrefix);
+            }
+            if (!!config.ignoreFilters) {
+                syncData(endpoint.dataUrl);
+                return;
             }
             // se asignan los valores de los filtros a la variable appliedFilters
             query = {
                 ...route.query,
-            }
+            };
             filtersKeys.forEach((key) => {
-                appliedFilters[key] = filters[key] ? filters[key] : undefined 
-                query['filters['+key+']'] = appliedFilters[key]
-            })
+                appliedFilters[key] = filters[key] ? filters[key] : undefined;
+                query['filters[' + key + ']'] = appliedFilters[key];
+            });
             // console.log(query)
-            router.push({ query: query })
+            router.push({ query: query });
             // se ejecuta la función syncData, que se encarga de sincronizar los datos con la api
-            if ( config.cachePrefix ) {
-                sessionStorage.setItem('table-filters-' + config.cachePrefix, JSON.stringify(appliedFilters))
+            if (config.cachePrefix) {
+                sessionStorage.setItem(
+                    'table-filters-' + config.cachePrefix,
+                    JSON.stringify(appliedFilters)
+                );
             }
             syncData(endpoint.dataUrl, {
-                prespreserveLastPage: params.prespreserveLastPage
-            })
-        }
+                prespreserveLastPage: params.prespreserveLastPage,
+            });
+        };
 
         const applyAction = (action) => {
             actions[action]({
                 appliedFilters,
-            })
-        }
+            });
+        };
 
         // se define la función clearFilters, que se ejecutará al hacer click en el botón de limpiar filtros
         const clearFilters = () => {
             // clear sort
-            sort.column = null
-            sort.order = null
+            sort.column = null;
+            sort.order = null;
 
             // se limpian los filtros
             for (const key in filters) {
-                filters[key] = null
+                filters[key] = null;
             }
             for (const key in appliedFilters) {
-                appliedFilters[key] = null
+                appliedFilters[key] = null;
             }
-            
-            router.push({ query: {} })
-            sessionStorage.removeItem("table-filters-pedido");
-            sessionStorage.removeItem("table-page-pedido");
-            syncData(endpoint.dataUrl)
-        }
+
+            router.push({ query: {} });
+            sessionStorage.removeItem('table-filters-' + config.cachePrefix);
+            sessionStorage.removeItem('table-page-' + config.cachePrefix);
+            // syncData(endpoint.dataUrl)
+            applyFilters();
+        };
 
         const deleteItem = (item) => {
-            window.awesomeModal.confirm(
-                '¿Está seguro?',
-                '¿Está seguro que desea eliminar este registro?',
-            ).then((result) => {
-                if (result) {
-                    let modal = window.awesomeModal.loading()
-                    httpRequest({
-                        url: config.deleteEnpoint.replace('${uuid}', item.uuid),
-                        method: 'GET'
-                    })
-                    .then((data) => {
-                        modal.close()
-                        window.awesomeModal.alert('Registro eliminado correctamente')
-                        syncData()
-                    })
-                    .catch((error) => {
-                        modal.close()
-                        if (error.response.status === 422) {
-                            errors.po = error.response.data.errors.po
-                        }
-                    })
-                }
-            })
-        }
-    
+            window.awesomeModal
+                .confirm(
+                    '¿Está seguro?',
+                    '¿Está seguro que desea eliminar este registro?'
+                )
+                .then((result) => {
+                    if (result) {
+                        let modal = window.awesomeModal.loading();
+                        httpRequest({
+                            url: config.deleteEnpoint.replace(
+                                '${uuid}',
+                                item.uuid
+                            ),
+                            method: 'GET',
+                        })
+                            .then((data) => {
+                                modal.close();
+                                window.awesomeModal.alert(
+                                    'Registro eliminado correctamente'
+                                );
+                                syncData();
+                            })
+                            .catch((error) => {
+                                modal.close();
+                                if (error.response.status === 422) {
+                                    errors.po = error.response.data.errors.po;
+                                }
+                            });
+                    }
+                });
+        };
+
         const restoreItem = (item) => {
-            window.awesomeModal.confirm(
-                '¿Está seguro?',
-                '¿Está seguro que desea restaurar este registro?',
-            ).then((result) => {
-                if (result) {
-                    let modal = window.awesomeModal.loading()
-                    httpRequest({
-                        url: config.restoreEnpoint.replace('${uuid}', item.uuid),
-                        method: 'GET'
-                    })
-                    .then((data) => {
-                        modal.close()
-                        window.awesomeModal.alert('Registro restaurado correctamente')
-                        syncData()
-                    })
-                    .catch((error) => {
-                        modal.close()
-                        if (error.response.status === 422) {
-                            errors.po = error.response.data.errors.po
-                        }
-                    })
-                }
-            })
-        }
+            window.awesomeModal
+                .confirm(
+                    '¿Está seguro?',
+                    '¿Está seguro que desea restaurar este registro?'
+                )
+                .then((result) => {
+                    if (result) {
+                        let modal = window.awesomeModal.loading();
+                        httpRequest({
+                            url: config.restoreEnpoint.replace(
+                                '${uuid}',
+                                item.uuid
+                            ),
+                            method: 'GET',
+                        })
+                            .then((data) => {
+                                modal.close();
+                                window.awesomeModal.alert(
+                                    'Registro restaurado correctamente'
+                                );
+                                syncData();
+                            })
+                            .catch((error) => {
+                                modal.close();
+                                if (error.response.status === 422) {
+                                    errors.po = error.response.data.errors.po;
+                                }
+                            });
+                    }
+                });
+        };
 
         const loadPermanentFilters = () => {
-            permanentFilters.splice(0, permanentFilters.length)
-            const permanentFiltersState = JSON.parse(localStorage.getItem('permanent-filters-state-pedido'))
+            permanentFilters.splice(0, permanentFilters.length);
+            const permanentFiltersState = JSON.parse(
+                localStorage.getItem(
+                    'permanent-filters-state-' + config.cachePrefix
+                )
+            );
             if (permanentFiltersState) {
                 permanentFiltersState.forEach((filter) => {
-                    permanentFilters.push(filter)
-                })
+                    permanentFilters.push(filter);
+                });
             }
-            permanentSort.splice(0, permanentSort.length)
-            const permanentSortState = JSON.parse(localStorage.getItem('permanent-sort-state-pedido'))
+            permanentSort.splice(0, permanentSort.length);
+            const permanentSortState = JSON.parse(
+                localStorage.getItem(
+                    'permanent-sort-state-' + config.cachePrefix
+                )
+            );
             if (permanentSortState) {
                 permanentSortState.forEach((sort) => {
-                    permanentSort.push(sort)
-                })
+                    permanentSort.push(sort);
+                });
             }
-        }
+        };
 
         // se define la función syncData, que se encarga de sincronizar los datos con la api
         const syncData = (url, add = { prespreserveLastPage: false }) => {
-            console.log(add)
+            // console.log(add)
             // se muestra el modal de carga
-            let modal = awesomeModal.loading()
+            let modal = awesomeModal.loading();
             // se verifica si el endpoint tiene la propiedad lastUrl, si no la tiene, se le asigna el valor de dataUrl
-            if ( !endpoint.lastUrl ) {
-                endpoint.lastUrl = endpoint.dataUrl
+            if (!endpoint.lastUrl) {
+                endpoint.lastUrl = endpoint.dataUrl;
             }
-    
+
             // se verifica si se ha pasado una url como parámetro, si no se ha pasado, se le asigna el valor de lastUrl
             if (!url) {
-                url = endpoint.lastUrl
+                url = endpoint.lastUrl;
             } else {
-                endpoint.lastUrl = url
-            }
-    
-            // se crea un objeto FormData, que se usará para adjuntar los filtros de búsqueda
-            const form_data = new FormData()
-            for (const [key, value] of Object.entries(appliedFilters)) {
-                if (value) {
-                    form_data.append('filters[' + key + ']', value)
-                }
+                endpoint.lastUrl = url;
             }
 
-            // appendFormData
-            // console.clear()
+            // se crea un objeto FormData, que se usará para adjuntar los filtros de búsqueda
+            const form_data = new FormData();
+            // los filtros en appendFormData se aplican siempre no importa lo que diga ignoreFilters
             appendFormData.forEach((item) => {
                 // console.log(item)
-                form_data.append(item.key, item.value)
-            })
-            // si la variable trash es true
-            if (trash.value) {
-                form_data.append('trash', 1)
-            }
+                form_data.append(item.key, item.value);
+            });
+            if (!config.ignoreFilters) {
+                for (const [key, value] of Object.entries(appliedFilters)) {
+                    if (value) {
+                        form_data.append('filters[' + key + ']', value);
+                    }
+                }
 
-            if (sort.column) {
-                form_data.append('sort[column]', sort.column)
-                form_data.append('sort[order]', sort.order)
-            }
+                // appendFormData
+                // console.clear()
+                // si la variable trash es true
+                if (trash.value) {
+                    form_data.append('trash', 1);
+                }
 
-            // se agregan los filtros permanentes
-            loadPermanentFilters()
-            permanentFilters.forEach((filter, index) => {
-                form_data.append('permanent_filters[' + index + '][column]',   filter.column)
-                form_data.append('permanent_filters[' + index + '][operator]', filter.operator)
-                form_data.append('permanent_filters[' + index + '][value]',    filter.value)
-            })
-            permanentSort.forEach((sort, index) => {
-                form_data.append('permanent_sort[' + index + '][column]', sort.column)
-                form_data.append('permanent_sort[' + index + '][order]',  sort.order)
-            })
-            
-            // se realiza la petición a la api
-            // console.log(filters)
-            page.value = ((new URL(url)).searchParams).get('page')
-            if ( add.prespreserveLastPage ) {
-                let storagePage = sessionStorage.getItem('table-page-' + config.cachePrefix)
-                if ( !page.value && storagePage ) {
-                    let newUrl = (new URL(url))
-                    newUrl.searchParams.set('page', storagePage)
-                    url = newUrl.href
+                if (sort.column) {
+                    form_data.append('sort[column]', sort.column);
+                    form_data.append('sort[order]', sort.order);
+                }
+
+                // se agregan los filtros permanentes
+                loadPermanentFilters();
+                permanentFilters.forEach((filter, index) => {
+                    form_data.append(
+                        'permanent_filters[' + index + '][column]',
+                        filter.column
+                    );
+                    form_data.append(
+                        'permanent_filters[' + index + '][operator]',
+                        filter.operator
+                    );
+                    form_data.append(
+                        'permanent_filters[' + index + '][value]',
+                        filter.value
+                    );
+                });
+                permanentSort.forEach((sort, index) => {
+                    form_data.append(
+                        'permanent_sort[' + index + '][column]',
+                        sort.column
+                    );
+                    form_data.append(
+                        'permanent_sort[' + index + '][order]',
+                        sort.order
+                    );
+                });
+                // se realiza la petición a la api
+                // console.log(filters)
+                page.value = new URL(url).searchParams.get('page');
+                if (add.prespreserveLastPage) {
+                    let storagePage = sessionStorage.getItem(
+                        'table-page-' + config.cachePrefix
+                    );
+                    if (!page.value && storagePage) {
+                        let newUrl = new URL(url);
+                        newUrl.searchParams.set('page', storagePage);
+                        url = newUrl.href;
+                    }
                 }
             }
             httpRequest({
@@ -681,41 +945,41 @@ const dashboardFront = ({
                 method: 'POST',
                 data: form_data,
             })
-            .then((data) => {
-                // cada item paginator.data.item debe tener 2 metodos, deleteItem, restoreItem
-                // creo el proxy
-                data.data = data.data.map((item) => {
-                    item = new Proxy(item, {
-                        get: function(target, prop) {
-                            if (prop == 'deleteItem') {
-                                return () => {
-                                    deleteItem(target)
+                .then((data) => {
+                    // cada item paginator.data.item debe tener 2 metodos, deleteItem, restoreItem
+                    // creo el proxy
+                    data.data = data.data.map((item) => {
+                        item = new Proxy(item, {
+                            get: function (target, prop) {
+                                if (prop == 'deleteItem') {
+                                    return () => {
+                                        deleteItem(target);
+                                    };
                                 }
-                            }
-                            if (prop == 'restoreItem') {
-                                return () => {
-                                    restoreItem(target)
+                                if (prop == 'restoreItem') {
+                                    return () => {
+                                        restoreItem(target);
+                                    };
                                 }
-                            }
-                            return target[prop]
-                        }
-                    })
+                                return target[prop];
+                            },
+                        });
 
-                    return item
+                        return item;
+                    });
+                    Object.assign(paginator, data);
+                    modal.close();
                 })
-                Object.assign(paginator, data)
-                modal.close()
-            })
-            .catch((error) => {
-                modal.close()
-            })
-        }
-    
+                .catch((error) => {
+                    modal.close();
+                });
+        };
+
         // watch para el cambio de la variable trash
         watch(trash, () => {
-            syncData(endpoint.dataUrl)
-        })
-    
+            syncData(endpoint.dataUrl);
+        });
+
         return {
             sort,
             sortBy,
@@ -728,12 +992,10 @@ const dashboardFront = ({
             applyFilters,
             applyAction,
             clearFilters,
-            syncData
-        }
-    }
-}
+            syncData,
+            config,
+        };
+    };
+};
 
-export {
-    dashboardFront,
-    // InputsRegister
-}
+export { dashboardFront };
