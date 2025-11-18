@@ -10,8 +10,7 @@
 </template>
 
 <script setup>
-import { computed } from '@vue/reactivity';
-import { ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 const props = defineProps({
     date: {
