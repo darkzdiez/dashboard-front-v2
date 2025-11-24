@@ -5,6 +5,7 @@ import InputCheckbox from './InputCheckbox.vue';
 import InputErrors from './InputErrors.vue';
 import InputFake from './InputFake.vue';
 import InputFile from './InputFile.vue';
+import InputFileSimple from './InputFileSimple.vue';
 import InputPassword from './InputPassword.vue';
 import InputSelect from './InputSelect.vue';
 import InputText from './InputText.vue';
@@ -18,6 +19,7 @@ export const InputsRegister = (app) => {
     app.component('ConfigFormInput', ConfigFormInput);
     app.component('InputText', InputText);
     app.component('InputFile', InputFile);
+    app.component('InputFileSimple', InputFileSimple);
     app.component('InputPassword', InputPassword);
     app.component('InputSelect', InputSelect);
     app.component('InputCheckbox', InputCheckbox);
