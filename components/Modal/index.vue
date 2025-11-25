@@ -158,13 +158,15 @@ window.awesomeModal.alert = (
 };
 
 import { useRouter } from 'vue-router';
-const router = useRouter();
-router.beforeEach((to, from, next) => {
-    if (to.path != from.path) {
-        closeAll();
-    }
-    next();
-});
+const router = useRouter() || window.appDependencies?.router;
+if (router) {
+    router.beforeEach((to, from, next) => {
+        if (to.path != from.path) {
+            closeAll();
+        }
+        next();
+    });
+}
 </script>
 
 <template>
