@@ -7,8 +7,8 @@ import { inject, reactive, ref, watchEffect } from 'vue';
 
 const $globalState = inject('$globalState');
 
-const route = useRoute();
-const router = useRouter();
+const router = useRouter() || window.appDependencies?.router;
+const route = useRoute() || router?.currentRoute?.value;
 const validRoutes = reactive([]);
 window.route = route;
 window.router = router;
@@ -57,14 +57,20 @@ window.clearInjectBreadcrumbAfter = clearInjectBreadcrumbAfter;
 
 watchEffect(() => {
     validRoutes.splice(0, validRoutes.length);
-    route.matched.forEach((item) => {
-        if (item.meta && item.meta.displayName && !item.meta.omitInBreadcrumb) {
-            Object.keys(route.params).forEach((key) => {
-                item.path = item.path.replace(':' + key, route.params[key]);
-            });
-            validRoutes.push(item);
-        }
-    });
+    if (route?.matched) {
+        route.matched.forEach((item) => {
+            if (
+                item.meta &&
+                item.meta.displayName &&
+                !item.meta.omitInBreadcrumb
+            ) {
+                Object.keys(route.params).forEach((key) => {
+                    item.path = item.path.replace(':' + key, route.params[key]);
+                });
+                validRoutes.push(item);
+            }
+        });
+    }
     // primero tengo que invertir el array para que quede en el orden correcto
     breadcrumbBefore.value.reverse().forEach((item) => {
         validRoutes.unshift(item);
