@@ -4,8 +4,8 @@ import FormLayout from './FormLayout.vue';
 // import { required, email, validate } from '../../libs/validate'
 import { useRoute, useRouter } from 'vue-router';
 
-const route = useRoute();
-const router = useRouter();
+const router = useRouter() || window.appDependencies?.router;
+const route = useRoute() || router?.currentRoute?.value;
 
 const form = reactive({
     description: '',
@@ -30,7 +30,7 @@ const errors = reactive({
 });
 
 httpRequest({
-    url: window.public_path + '/api/cron/' + route.params.id,
+    url: window.public_path + '/api/cron/' + (route?.params?.id || ''),
     method: 'GET',
 })
     .then((data) => {
@@ -64,7 +64,7 @@ const onSubmit = () => {
     });
 
     httpRequest({
-        url: window.public_path + '/api/cron/store/' + route.params.id,
+        url: window.public_path + '/api/cron/store/' + (route?.params?.id || ''),
         method: 'POST',
         data: form_data,
         errors: errors,
@@ -92,7 +92,7 @@ const executeNow = () => {
                     url:
                         window.public_path +
                         '/api/cron/' +
-                        route.params.id +
+                        (route?.params?.id || '') +
                         '/execute-now',
                     method: 'POST',
                 })

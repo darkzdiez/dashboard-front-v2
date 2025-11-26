@@ -3,8 +3,8 @@ import { reactive } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Form from './Form.vue';
 
-const route = useRoute();
-const router = useRouter();
+const router = useRouter() || window.appDependencies?.router;
+const route = useRoute() || router?.currentRoute?.value;
 
 const form = reactive({
     codigo_asis: '',
@@ -17,7 +17,7 @@ const errors = reactive({
 let modal = awesomeModal.loading();
 
 httpRequest({
-    url: window.public_path + '/api/codigos-presupuestarios/' + route.params.id,
+    url: window.public_path + '/api/codigos-presupuestarios/' + (route?.params?.id || ''),
     method: 'GET',
 })
     .then((data) => {
@@ -36,7 +36,7 @@ const onSubmit = () => {
     form_data.append('codigo_asis', form.codigo_asis);
     form_data.append('codigo_sia', form.codigo_sia);
 
-    if (route.meta.copy) {
+    if (route?.meta?.copy) {
         form_data.append('__form-input-copy', 1);
     }
 
@@ -44,7 +44,7 @@ const onSubmit = () => {
         url:
             window.public_path +
             '/api/codigos-presupuestarios/store/' +
-            route.params.id,
+            (route?.params?.id || ''),
         method: 'POST',
         data: form_data,
         errors: errors,

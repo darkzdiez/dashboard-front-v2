@@ -4,8 +4,8 @@ import Form from './Form.vue';
 // import { required, email, validate } from '../../libs/validate'
 import { useRoute, useRouter } from 'vue-router';
 
-const route = useRoute();
-const router = useRouter();
+const router = useRouter() || window.appDependencies?.router;
+const route = useRoute() || router?.currentRoute?.value;
 
 const form = reactive({
     name: '',
@@ -22,7 +22,7 @@ const errors = reactive({
 });
 let modal = awesomeModal.loading();
 httpRequest({
-    url: window.public_path + '/api/permission/' + route.params.id,
+    url: window.public_path + '/api/permission/' + (route?.params?.id || ''),
     method: 'GET',
 })
     .then((data) => {
@@ -50,7 +50,7 @@ const onSubmit = () => {
     });
 
     httpRequest({
-        url: window.public_path + '/api/permission/store/' + route.params.id,
+        url: window.public_path + '/api/permission/store/' + (route?.params?.id || ''),
         method: 'POST',
         data: form_data,
         errors: errors,

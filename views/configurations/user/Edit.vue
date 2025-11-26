@@ -4,8 +4,8 @@ import FormLayout from './FormLayout.vue';
 // import { required, email, validate } from '../../libs/validate'
 import { useRoute, useRouter } from 'vue-router';
 
-const route = useRoute();
-const router = useRouter();
+const router = useRouter() || window.appDependencies?.router;
+const route = useRoute() || router?.currentRoute?.value;
 
 const form = reactive({
     name: '',
@@ -32,7 +32,7 @@ const errors = reactive({
 });
 let modal = awesomeModal.loading();
 httpRequest({
-    url: window.public_path + '/api/user/' + route.params.id,
+    url: window.public_path + '/api/user/' + (route?.params?.id || ''),
     method: 'GET',
 })
     .then((data) => {
@@ -73,7 +73,7 @@ const onSubmit = () => {
         errors[key].splice(0, errors[key].length);
     });
     httpRequest({
-        url: window.public_path + '/api/user/store/' + route.params.id,
+        url: window.public_path + '/api/user/store/' + (route?.params?.id || ''),
         method: 'POST',
         data: form_data,
         errors: errors,
