@@ -146,6 +146,23 @@ const dashboardFront = ({
             })
                 .then((response) => {
                     // si la cabecera de la respuesta x-app-version es diferente a la versión actual
+                    let useOrganizationModule = response.headers.get('x-app-use-organization-module');
+                    window.$globalState.useOrganizationModule = useOrganizationModule === '1';
+
+                    let organizationModuleName = response.headers.get('x-app-organization-module-name');
+                    if (organizationModuleName) {
+                        window.$globalState.organizationModuleName = organizationModuleName;
+                    }
+
+                    let useSocialLogin = response.headers.get('x-app-use-social-login');
+                    window.$globalState.useSocialLogin = useSocialLogin === '1';
+
+                    let groupsShowParent = response.headers.get('x-app-groups-show-parent');
+                    window.$globalState.groupsShowParent = groupsShowParent === '1';
+
+                    let groupsAlertAndNotifications = response.headers.get('x-app-groups-alert-and-notifications');
+                    window.$globalState.groupsAlertAndNotifications = groupsAlertAndNotifications === '1';
+
                     let appVersion = response.headers.get('x-app-version');
                     if (appVersion !== window.$globalState.real_version) {
                         // Si la versión es diferente, forzamos la recarga de la página
@@ -776,10 +793,9 @@ const dashboardFront = ({
                     if (result) {
                         let modal = window.awesomeModal.loading();
                         httpRequest({
-                            url: config.deleteEnpoint.replace(
-                                '${uuid}',
-                                item.uuid
-                            ),
+                            url: config.deleteEnpoint
+                                .replace('${uuid}', item.uuid || item.id)
+                                .replace('${id}', item.id || item.uuid),
                             method: 'GET',
                         })
                             .then((data) => {
@@ -791,7 +807,7 @@ const dashboardFront = ({
                             })
                             .catch((error) => {
                                 modal.close();
-                                if (error.response.status === 422) {
+                                if (error?.response?.status === 422) {
                                     errors.po = error.response.data.errors.po;
                                 }
                             });
@@ -809,10 +825,9 @@ const dashboardFront = ({
                     if (result) {
                         let modal = window.awesomeModal.loading();
                         httpRequest({
-                            url: config.restoreEnpoint.replace(
-                                '${uuid}',
-                                item.uuid
-                            ),
+                            url: config.restoreEnpoint
+                                .replace('${uuid}', item.uuid || item.id)
+                                .replace('${id}', item.id || item.uuid),
                             method: 'GET',
                         })
                             .then((data) => {
@@ -824,7 +839,7 @@ const dashboardFront = ({
                             })
                             .catch((error) => {
                                 modal.close();
-                                if (error.response.status === 422) {
+                                if (error?.response?.status === 422) {
                                     errors.po = error.response.data.errors.po;
                                 }
                             });
