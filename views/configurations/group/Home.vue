@@ -46,8 +46,8 @@
                     <th>Nombre</th>
                     <th>Guard</th>
                     <th>Descipción</th>
-                    <th>Padre</th>
-                    <th>Organización</th>
+                    <th v-if="$globalState.groupsShowParent">Padre</th>
+                    <th>{{ $globalState.organizationModuleName }}</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -77,7 +77,7 @@
                             @keyup.enter="pagination.applyFilters"
                         />
                     </td>
-                    <td></td>
+                    <td v-if="$globalState.groupsShowParent"></td>
                     <td></td>
                     <td>
                         <div class="btns">
@@ -101,7 +101,7 @@
                     <td>{{ item.name }}</td>
                     <td>{{ item.guard_name }}</td>
                     <td v-html="item.description"></td>
-                    <td>{{ item.parent ? item.parent.name : '' }}</td>
+                    <td v-if="$globalState.groupsShowParent">{{ item.parent ? item.parent.name : '' }}</td>
                     <td>{{ item.organization?.name }}</td>
                     <td>
                         <div class="btns">
@@ -141,9 +141,11 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, inject } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Tree from './Tree.vue';
+
+const $globalState = inject('$globalState');
 
 const route = useRoute();
 const router = useRouter();
