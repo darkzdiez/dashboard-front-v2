@@ -1,16 +1,17 @@
 <template>
-    <button type="button" @click.prevent="openColumnsConfig">
+    <button type="button" @click.prevent="openColumnsConfig" v-if="$globalState?.auth?.user?.organization_type_id != 7">
         <slot></slot>
     </button>
 </template>
 
 <script setup>
-import { reactive, watch } from 'vue';
+import { inject, reactive, watch } from 'vue';
 import ModalTableConfig from './ModalTableConfig.vue';
 import ModalTableFilters from './ModalTableFilters.vue';
 import ModalTableLayout from './ModalTableLayout.vue';
 import ModalTableMultipleUpdate from './ModalTableMultipleUpdate.vue';
 import ModalTableSort from './ModalTableSort.vue';
+const $globalState = inject('$globalState');
 
 const props = defineProps({
     columns: {
