@@ -491,7 +491,7 @@ const resetPasswordMultiple = (records = selectedItems.value) => {
                         modal.close();
                         awesomeModal.alert(
                             'Contraseñas restablecidas',
-                            'Las contraseñas de los usuarios seleccionados han sido restablecidas y se les ha enviado un correo electrónico con la nueva contraseña.'
+                            'La tarea de restablecer las contraseñas de los usuarios seleccionados ha sido programada y se les enviará un correo electrónico con la nueva contraseña.'
                         );
                     })
                     .catch((error) => {
