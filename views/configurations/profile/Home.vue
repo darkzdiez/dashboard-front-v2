@@ -50,57 +50,71 @@ httpRequest({
     });
 
 const editProfile = () => {
-    let modal = awesomeModal.loading();
-    var form_data = new FormData();
+    window.awesomeModal
+        .confirm(
+            'Actualizar Perfil',
+            '¿Estás seguro de que deseas actualizar tu información de perfil?'
+        )
+        .then(() => {
+            let modal = awesomeModal.loading();
+            var form_data = new FormData();
 
-    form_data.append('name', form.name);
-    form_data.append('username', form.username);
-    form_data.append('email', form.email);
-    // clear all errors
-    Object.keys(errors).forEach((key) => {
-        errors[key].splice(0, errors[key].length);
-    });
-    httpRequest({
-        url: window.public_path + '/api/profile',
-        method: 'POST',
-        data: form_data,
-        errors: errors,
-    })
-        .then((data) => {
-            modal.close();
-        })
-        .catch((error) => {
-            modal.close();
+            form_data.append('name', form.name);
+            form_data.append('username', form.username);
+            form_data.append('email', form.email);
+            // clear all errors
+            Object.keys(errors).forEach((key) => {
+                errors[key].splice(0, errors[key].length);
+            });
+            httpRequest({
+                url: window.public_path + '/api/profile',
+                method: 'POST',
+                data: form_data,
+                errors: errors,
+            })
+                .then((data) => {
+                    modal.close();
+                })
+                .catch((error) => {
+                    modal.close();
+                });
         });
 };
 
 const changePassword = () => {
-    let modal = awesomeModal.loading();
-    var form_data = new FormData();
+    window.awesomeModal
+        .confirm(
+            'Cambiar Contraseña',
+            '¿Estás seguro de que deseas cambiar tu contraseña?'
+        )
+        .then(() => {
+            let modal = awesomeModal.loading();
+            var form_data = new FormData();
 
-    form_data.append('password', form.password);
-    form_data.append('password_confirmation', form.password_confirmation);
-    // clear all errors
-    Object.keys(errors).forEach((key) => {
-        errors[key].splice(0, errors[key].length);
-    });
-    httpRequest({
-        url: window.public_path + '/api/profile/change-password',
-        method: 'POST',
-        data: form_data,
-        errors: errors,
-    })
-        .then((data) => {
-            awesomeModal.success(
-                'Éxito',
-                'Contraseña actualizada correctamente'
-            );
-            window.location.reload();
+            form_data.append('password', form.password);
+            form_data.append('password_confirmation', form.password_confirmation);
+            // clear all errors
+            Object.keys(errors).forEach((key) => {
+                errors[key].splice(0, errors[key].length);
+            });
+            httpRequest({
+                url: window.public_path + '/api/profile/change-password',
+                method: 'POST',
+                data: form_data,
+                errors: errors,
+            })
+                .then((data) => {
+                    awesomeModal.success(
+                        'Éxito',
+                        'Contraseña actualizada correctamente'
+                    );
+                    window.location.reload();
 
-            modal.close();
-        })
-        .catch((error) => {
-            modal.close();
+                    modal.close();
+                })
+                .catch((error) => {
+                    modal.close();
+                });
         });
 };
 </script>
