@@ -103,10 +103,10 @@
                 <th>Roles</th>
                 <th>Entorno</th>
                 <th>Organización</th>
-                <th>Login Pass</th>
-                <th>Login Google</th>
-                <th>Testing</th>
-                <th>Production</th>
+                <th v-if="$globalState.useSocialLogin">Login Pass</th>
+                <th v-if="$globalState.useSocialLogin">Login Google</th>
+                <th v-if="$globalState.useSocialLogin">Testing</th>
+                <th v-if="$globalState.useSocialLogin">Production</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -165,10 +165,10 @@
                         </option>
                     </select>
                 </td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
+                <td v-if="$globalState.useSocialLogin"></td>
+                <td v-if="$globalState.useSocialLogin"></td>
+                <td v-if="$globalState.useSocialLogin"></td>
+                <td v-if="$globalState.useSocialLogin"></td>
                 <td>
                     <div class="btns">
                         <button
@@ -213,7 +213,7 @@
                         >{{ item.organization?.name }}</router-link
                     >
                 </td>
-                <td class="text-center">
+                <td class="text-center" v-if="$globalState.useSocialLogin">
                     <i
                         class="fas"
                         :class="
@@ -223,7 +223,7 @@
                         "
                     ></i>
                 </td>
-                <td class="text-center">
+                <td class="text-center" v-if="$globalState.useSocialLogin">
                     <i
                         class="fas"
                         :class="
@@ -233,7 +233,7 @@
                         "
                     ></i>
                 </td>
-                <td class="text-center">
+                <td class="text-center" v-if="$globalState.useSocialLogin">
                     <i
                         class="fas"
                         :class="
@@ -243,7 +243,7 @@
                         "
                     ></i>
                 </td>
-                <td class="text-center">
+                <td class="text-center" v-if="$globalState.useSocialLogin">
                     <i
                         class="fas"
                         :class="
@@ -306,7 +306,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, inject } from 'vue';
 import { useRoute } from 'vue-router';
 import { showModalActivityLogTimeline } from 'guachiman-activity-log';
 import MultipleSelectionRecordsButtons from '@/components/MultipleSelectionRecordsButtons.vue';
@@ -314,6 +314,7 @@ import { useMultipleSelectionRecords } from '@/composables/useMultipleSelectionR
 
 const route = useRoute();
 const tableId = 'configurations:user';
+const $globalState = inject('$globalState');
 
 const pagination = dataPaginator({
     urlBase: new URL(window.public_path + '/api/user'),
