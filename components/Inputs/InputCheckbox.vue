@@ -39,36 +39,36 @@ const props = defineProps({
 // watch changes in the modelValue prop deep true
 // const modelValue = ref(props.modelValue)
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue', 'change']);
 const typeIsArray = ref(
     Object.prototype.toString.call(props.modelValue) == '[object Array]'
 );
 
 const handleChange = () => {
+    let newValue;
     // Si el tipo es array
     if (typeIsArray.value) {
         // Si el valor ya existe en el array
         if (props.modelValue.includes(props.trueValue)) {
             // Eliminar el valor del array
-            emit(
-                'update:modelValue',
-                props.modelValue.filter((value) => value != props.trueValue)
-            );
+            newValue = props.modelValue.filter((value) => value != props.trueValue);
         } else {
             // Agregar el valor al array
-            emit('update:modelValue', [...props.modelValue, props.trueValue]);
+            newValue = [...props.modelValue, props.trueValue];
         }
     } else {
         // Si el tipo no es array
         // Si el valor es igual al trueValue
         if (props.modelValue == props.trueValue) {
             // Asignar el falseValue
-            emit('update:modelValue', props.falseValue);
+            newValue = props.falseValue;
         } else {
             // Asignar el trueValue
-            emit('update:modelValue', props.trueValue);
+            newValue = props.trueValue;
         }
     }
+    emit('update:modelValue', newValue);
+    emit('change', newValue);
 };
 /*
 if ( typeIsArray ) {
