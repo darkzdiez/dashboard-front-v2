@@ -30,8 +30,8 @@
             class="col-1"
         />
     </div>
-    <h3>Permisos de Acceso:</h3>
-    <div class="grid-2 gap-15">
+    <h3 v-if="$globalState.useSocialLogin">Permisos de Acceso:</h3>
+    <div class="grid-2 gap-15" v-if="$globalState.useSocialLogin">
         <InputCheckbox
             label="Login con Contraseña"
             :true-value="1"
@@ -61,8 +61,8 @@
             class="col-1"
         />
     </div>
-    <h3>Permisos:</h3>
-    <div class="grid-2 gap-15">
+    <!--<h3>Permisos:</h3>-->
+    <div class="grid-2 gap-15 mt-15">
         <!--
         <InputSelect
             label="Es Super Administador (ROOT)"
@@ -110,7 +110,10 @@
 </template>
 
 <script setup>
+import { inject } from 'vue';
 import { reactive } from '@vue/reactivity';
+
+const $globalState = inject('$globalState');
 
 defineProps({
     form: {
