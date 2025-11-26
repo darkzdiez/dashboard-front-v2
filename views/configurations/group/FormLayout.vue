@@ -26,6 +26,7 @@
                     return option.uuid != route.params.id;
                 }
             "
+            v-if="$globalState.groupsShowParent"
         >
             <template #option="{ id, name, uuid }">
                 <div>
@@ -53,27 +54,31 @@
     </div>
     -->
     <PermissionsList :form="form" />
-    <h3>Notificaciones y Alertas que recibe:</h3>
-    <div
-        class="grid-3 gap-15"
-        v-if="Object.keys(alertTypes) && Object.keys(alertTypes).length > 0"
-    >
-        <InputCheckbox
-            v-for="(item, key) in Object.keys(alertTypes)"
-            :key="key"
-            :label="alertTypes[item]"
-            :true-value="item"
-            v-model="form.notifications"
-        />
-    </div>
+    <template v-if="$globalState.groupsAlertAndNotifications">
+        <h3>Notificaciones y Alertas que recibe:</h3>
+        <div
+            class="grid-3 gap-15"
+            v-if="Object.keys(alertTypes) && Object.keys(alertTypes).length > 0"
+        >
+            <InputCheckbox
+                v-for="(item, key) in Object.keys(alertTypes)"
+                :key="key"
+                :label="alertTypes[item]"
+                :true-value="item"
+                v-model="form.notifications"
+            />
+        </div>
+    </template>
 </template>
 
 <script setup>
+import { inject } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import PermissionsList from '../../../components/PermissionsList.vue';
 
 const route = useRoute();
 const router = useRouter();
+const $globalState = inject('$globalState');
 
 defineProps({
     form: {
