@@ -189,7 +189,8 @@ i {
     align-items: center;
     justify-content: center;
     padding: 0 7.5px;
-    background-color: #ededed;
+    // background-color: #ededed;
+    background-color: transparent;
     &.fa-toggle-on {
         color: var(--green);
     }
@@ -226,7 +227,8 @@ label[class*='input'] {
         border-radius: 4px;
         padding: 0 15px;
         box-sizing: border-box;
-        background-color: #fff;
+        // background-color: #fff;
+        background-color: transparent;
         justify-content: flex-start;
         display: flex;
         align-items: center;
