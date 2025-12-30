@@ -110,8 +110,7 @@
 </template>
 
 <script setup>
-import { inject } from 'vue';
-import { reactive } from '@vue/reactivity';
+import { inject, ref } from 'vue';
 
 const $globalState = inject('$globalState');
 
@@ -126,13 +125,15 @@ defineProps({
     },
 });
 
-const groups = reactive({});
+const groups = ref({ data: [] });
 httpRequest({
     url: window.public_path + '/api/group',
     method: 'POST',
 })
     .then((data) => {
-        Object.assign(groups, data);
+        data.data.forEach((group) => {
+            groups.value.data.push(group);
+        });
     })
     .catch((error) => {});
 </script>
