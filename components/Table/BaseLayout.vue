@@ -202,6 +202,11 @@ const props = defineProps({
 const display = ref(false);
 </script>
 <style lang="scss" scoped>
+td:empty::after {
+    content: '-';
+    color: #5f5f5f;
+}
+
 .card__header {
     padding: 4px 15px;
     font-size: 12px;
