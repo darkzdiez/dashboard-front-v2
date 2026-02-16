@@ -135,7 +135,7 @@ const createHttpRequest = ({ router, globalState, awesomeModal }) => {
             if (errors && Object.prototype.toString.call(errors) === '[object Object]') {
                 Object.assign(errors, bodyData?.errors || {});
             }
-
+            
             if (displayModalErrors) {
                 const errorsMarkup = Object.keys(bodyData?.errors || {})
                     .map((key) => {
@@ -146,8 +146,8 @@ const createHttpRequest = ({ router, globalState, awesomeModal }) => {
                             .join('');
                     })
                     .join('');
-
-                awesomeModal.error(
+                // console.log(['aqui', response.status, displayModalErrors, bodyData?.errors, errorsMarkup])
+                window.awesomeModal.error(
                     'Tiene errores en el formulario',
                     `
                     ${
