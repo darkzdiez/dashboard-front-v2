@@ -38,6 +38,7 @@ window.httpRequest({
 ### Comportamiento detallado
 - Siempre añade el header `X-Requested-With: XMLHttpRequest`.
 - **No fija `Content-Type`** manualmente. Esto es intencional para que el navegador establezca `multipart/form-data` cuando se usa `FormData` (ideal para formularios/archivos).
+- Sincroniza automáticamente todos los headers `x-app-*` en `window.$globalState` (modo genérico, sin hardcode por proyecto).
 - Éxito (`2xx`): resuelve con `response.json()`.
 - 401: flujo de no autorizado (fuerza login/redirección).
 - 405: método no permitido.
@@ -50,6 +51,26 @@ window.httpRequest({
 - Respuestas de éxito: JSON.
 - 422: JSON con estructura `{ message: string, errors: { field: [msg, ...] } }`.
 - 401/405/413/500: JSON con `message` o texto razonable.
+
+### Headers dinámicos `x-app-*` (genérico multi-proyecto)
+
+`httpRequest` recorre todos los headers de respuesta y toma los que empiezan con `x-app-`.
+
+- Conversión de nombre:
+    - `x-app-use-social-login` → `useSocialLogin`
+    - `x-app-organization-module-name` → `organizationModuleName`
+    - `x-app-meeting-room-max-hours-per-day` → `meetingRoomMaxHoursPerDay`
+- Conversión de valor:
+    - `"true" | "false"` → `boolean`
+    - `"123" | "123.45"` → `number`
+    - cualquier otro valor → `string`
+
+Se guardan en dos lugares:
+
+1. `window.$globalState.<claveCamelCase>` (compatibilidad hacia atrás)
+2. `window.$globalState.appHeaders.<claveCamelCase>` (espacio ordenado para nuevos desarrollos)
+
+Esto evita tocar `httpRequest.js` cada vez que un backend agrega una nueva configuración por headers.
 
 ---
 
@@ -218,6 +239,20 @@ const formData = new FormData();
 if (form.logo instanceof File) formData.append('logo', form.logo);
 if (form.equipment_consent instanceof File) formData.append('equipment_consent', form.equipment_consent);
 if (form.contract instanceof File) formData.append('contract', form.contract);
+```
+
+#### 11) Leer configuración enviada por headers `x-app-*`
+
+```js
+// Header backend: x-app-use-social-login: 1
+// Header backend: x-app-organization-module-name: Incubada
+
+const useSocialLogin = window.$globalState.useSocialLogin;
+const moduleName = window.$globalState.organizationModuleName;
+
+// Recomendado para código nuevo:
+const appHeaders = window.$globalState.appHeaders;
+const maxHours = appHeaders.meetingRoomMaxHoursPerDay;
 ```
 
 ---
@@ -544,6 +579,7 @@ const pagination = dataPaginator({
 - Usar `appendFormData` para parámetros no editables (empresa, tenant, `trash`). Se pueden pasar funciones para evaluar al vuelo.
 - Si `ignoreFilters` es `true`, los filtros editables no se envían; útil cuando los filtros vienen de `appendFormData` o permanentes.
 - Para borrado/restauración, configurar `deleteEnpoint` y `restoreEnpoint` con el placeholder `${uuid}`.
+- Para configuraciones globales cross-proyecto, preferir headers `x-app-*` en backend y consumirlos desde `window.$globalState.appHeaders`.
 
 ---
 
