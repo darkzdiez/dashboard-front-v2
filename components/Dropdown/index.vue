@@ -23,7 +23,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <button class="dropdown" @click.stop="toggleDropdown">
+    <button class="dropdown" @click.stop="toggleDropdown" type="button">
         <div class="dropdown__button">
             <slot name="button"></slot>
         </div>
