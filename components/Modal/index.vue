@@ -13,6 +13,7 @@ const open = (data) => {
         buttons: data.buttons,
         component: data.component,
         preventClose: data.preventClose || false,
+        autoCloseSeconds: Number(data.autoCloseSeconds) || 0,
         rawData: data,
         callback: {},
     };
@@ -24,10 +25,22 @@ const open = (data) => {
 
     item.callback.promise.then((response) => {
         // console.log('paso 2')
+        if (item.autoCloseTimer) {
+            clearTimeout(item.autoCloseTimer);
+        }
+        if (item.keydown) {
+            window.removeEventListener('keydown', item.keydown);
+        }
         modals[key - 1] = false;
     });
     item.callback.promise.catch((error) => {
         // console.log('paso 3')
+        if (item.autoCloseTimer) {
+            clearTimeout(item.autoCloseTimer);
+        }
+        if (item.keydown) {
+            window.removeEventListener('keydown', item.keydown);
+        }
         modals[key - 1] = false;
     });
     // close is alias for resolve
@@ -46,6 +59,12 @@ const open = (data) => {
         }
     };
     window.addEventListener('keydown', item.keydown);
+
+    if (item.autoCloseSeconds > 0) {
+        item.autoCloseTimer = setTimeout(() => {
+            item.callback.resolve(true);
+        }, item.autoCloseSeconds * 1000);
+    }
 
     return item.callback;
 };
@@ -74,13 +93,14 @@ window.awesomeModal.error = (title, message) => {
         iconColor: 'var(--red)',
     });
 };
-window.awesomeModal.success = (title, message) => {
+window.awesomeModal.success = (title, message, autoCloseSeconds = 0) => {
     return open({
         type: 'loading',
         title: title,
         message: message,
         icon: '<i class="fas fa-check"></i>',
         iconColor: 'var(--green)',
+        autoCloseSeconds,
     });
 };
 window.awesomeModal.confirm = (

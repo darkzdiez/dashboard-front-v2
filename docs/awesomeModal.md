@@ -14,9 +14,9 @@ Fuente: `resources/js/dashboard-front-v2/components/Modal/index.vue`.
 
 | Método | Retorna | Cierre | Uso típico |
 |--------|---------|--------|------------|
-| `open({type:'component', component, ...})` | objeto `callback` | `resolve()` / `reject()` | Modales custom con componente Vue |
+| `open({type:'component', component, autoCloseSeconds?, ...})` | objeto `callback` | `resolve()` / `reject()` | Modales custom con componente Vue |
 | `loading(msg?)` | objeto `callback` | `.close()` | Spinner durante peticiones HTTP |
-| `success(title, msg)` | objeto `callback` | click overlay / escape | Notificación de éxito |
+| `success(title, msg, autoCloseSeconds=30)` | objeto `callback` | autocierre / overlay / escape | Notificación de éxito |
 | `error(title, msg)` | objeto `callback` | click overlay / escape | Notificación de error |
 | `confirm(title, msg, buttons?)` | `Promise` | botón click → resolve(value) | Confirmación sí/no (estilo rojo/verde) |
 | `confirm2(title, msg, buttons?)` | `Promise` | botón click → resolve(value) | Confirmación sí/no (estilo gris) |
@@ -28,6 +28,8 @@ Fuente: `resources/js/dashboard-front-v2/components/Modal/index.vue`.
 Notas de cierre y prevención:
 - Si `preventClose` es `true`, NO se cierra por overlay ni por la tecla Escape.
 - Si `preventClose` es `false` (por defecto), overlay y Escape llaman `reject()`.
+- Si `autoCloseSeconds` es mayor a `0`, el modal se cierra automáticamente al cumplirse ese tiempo (en segundos).
+- Si `autoCloseSeconds` no se define, es `0`, o no es numérico, NO hay autocierre.
 - Al cambiar de ruta, se ejecuta `closeAll()` (ver guard en `index.vue`).
 
 ---
@@ -64,6 +66,9 @@ Muestran un ícono (verde/check o rojo/warning) con título y mensaje. Retornan 
 // Éxito
 awesomeModal.success('Guardado', 'Los cambios fueron guardados correctamente.');
 
+// Éxito con autocierre personalizado (segundos)
+awesomeModal.success('Guardado', 'Se guardó correctamente.', 10);
+
 // Error
 awesomeModal.error('Error al guardar', 'No se pudo conectar con el servidor.');
 
@@ -72,6 +77,8 @@ awesomeModal.success('Completado', 'Operación exitosa').promise.finally(() => {
     pagination.applyFilters({ prespreserveLastPage: true });
 });
 ```
+
+`success` usa `30` segundos por defecto. Para desactivar autocierre en `success`, pasa `0`.
 
 ---
 
@@ -179,6 +186,7 @@ Puedes pasar un arreglo de `buttons` si requieres más de uno.
 1) Llamas a `open` con:
    - `type: 'component'`
    - `component: TuComponente`
+    - `autoCloseSeconds` (opcional, en segundos; `0` o no definido = sin autocierre)
    - `preventClose` (opcional)
    - cualquier otro dato que necesites pasar (p.ej.: `documento`, `item`).
 
