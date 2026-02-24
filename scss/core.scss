@@ -152,6 +152,12 @@ $container-sizes: (
         line-height: 13px;
         height: 25px;
     }
+    &--very-very-small {
+        font-size: 11px;
+        padding: 2px 8px;
+        line-height: 11px;
+        height: 20px;
+    }
     &--large {
         font-size: 18px;
         padding: 12px 24px;

@@ -14,9 +14,9 @@
 .controls {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     margin-bottom: 20px;
-    flex-direction: column;
+    //flex-direction: column;
     &__title {
         font-weight: 600;
         font-size: 30px;
