@@ -86,6 +86,7 @@ watchEffect(() => {
         <TopBar></TopBar>
         <div class="main-content">
             <div class="main-content__content">
+                <!--
                 <div class="breadcrumb">
                     <div>
                         <span v-for="(matched, idx) in validRoutes" :key="idx">
@@ -113,6 +114,7 @@ watchEffect(() => {
                         </span>
                     </div>
                 </div>
+                -->
                 <div>
                     <slot></slot>
                 </div>
