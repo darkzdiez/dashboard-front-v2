@@ -8,3 +8,4 @@ composer.lock
 composer-dev.lock
 package-lock.json
 *.exe
+pnpm-lock.yaml
