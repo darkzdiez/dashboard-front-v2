@@ -2,9 +2,20 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 
 const dropdownShow = ref(false);
+const dropdownRef = ref(null);
 
 const toggleDropdown = () => {
     dropdownShow.value = !dropdownShow.value;
+};
+
+const handleDocumentClick = (event) => {
+    if (!dropdownRef.value) {
+        return;
+    }
+
+    if (!dropdownRef.value.contains(event.target)) {
+        dropdownShow.value = false;
+    }
 };
 
 const handleKeydown = (e) => {
@@ -15,15 +26,22 @@ const handleKeydown = (e) => {
 
 onMounted(() => {
     window.addEventListener('keydown', handleKeydown);
+    document.addEventListener('click', handleDocumentClick, true);
 });
 
 onUnmounted(() => {
     window.removeEventListener('keydown', handleKeydown);
+    document.removeEventListener('click', handleDocumentClick, true);
 });
 </script>
 
 <template>
-    <button class="dropdown" @click.stop="toggleDropdown" type="button">
+    <button
+        ref="dropdownRef"
+        class="dropdown"
+        @click.stop="toggleDropdown"
+        type="button"
+    >
         <div class="dropdown__button">
             <slot name="button"></slot>
         </div>
