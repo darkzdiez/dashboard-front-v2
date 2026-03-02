@@ -277,7 +277,7 @@
                         </button>
                         <button
                             class="btn btn--gray"
-                            @click="loginAs(item.uuid)"
+                            @click="openLoginAsModal(item)"
                             v-if="userCan('login-as')"
                         >
                             <i class="fas fa-sign-in-alt"></i>
@@ -311,6 +311,7 @@ import { useRoute } from 'vue-router';
 import { showModalActivityLogTimeline } from 'guachiman-activity-log';
 import MultipleSelectionRecordsButtons from '@/components/MultipleSelectionRecordsButtons.vue';
 import { useMultipleSelectionRecords } from '@/composables/useMultipleSelectionRecords';
+import ModalLoginAsOptions from './ModalLoginAsOptions.vue';
 
 const route = useRoute();
 const tableId = 'configurations:user';
@@ -505,6 +506,23 @@ const resetPasswordMultiple = (records = selectedItems.value) => {
 onMounted(() => {
     loadFilterOptions();
 });
+
+const openLoginAsModal = (item) => {
+    const modal = awesomeModal.open({
+        type: 'component',
+        component: ModalLoginAsOptions,
+        userUuid: item.uuid,
+        userName: item.name,
+    });
+
+    modal.promise
+        .then((result) => {
+            if (result?.action === 'direct-login') {
+                loginAs(item.uuid);
+            }
+        })
+        .catch(() => {});
+};
 
 const loginAs = (id) => {
     window.awesomeModal
