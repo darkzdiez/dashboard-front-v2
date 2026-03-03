@@ -423,10 +423,11 @@ const dashboardFront = ({
             ignoreFilters: false,
         },
         appendFormData = [],
+        trash = false,
     }) => {
         let query = null;
 
-        const trash = ref(false);
+        trash = ref(trash);
 
         const page = ref(null);
 
