@@ -619,10 +619,12 @@ $class-promerties: (
         margin-right,
     ),
     my: (
-        margin-top margin-bottom,
+        margin-top,
+        margin-bottom,
     ),
     mx: (
-        margin-left margin-right,
+        margin-left,
+        margin-right,
     ),
     p: (
         padding,
