@@ -318,7 +318,7 @@ const tableId = 'configurations:user';
 const $globalState = inject('$globalState');
 
 const pagination = dataPaginator({
-    urlBase: new URL(window.public_path + '/api/user'),
+    urlBase: new URL('/api/user', window.public_path || window.location.origin),
     filtersKeys: [
         'name',
         'username',
@@ -542,13 +542,38 @@ const loginAs = (id) => {
                     method: 'POST',
                     data: form_data,
                 })
-                    .then((data) => {
+                    .then(async (data) => {
                         modal.close();
-                        window.location.href = window.public_path;
+
+                        if (
+                            typeof window.$globalState
+                                ?.applyImpersonationSession === 'function'
+                        ) {
+                            await window.$globalState.applyImpersonationSession(
+                                data
+                            );
+
+                            const destination = new URL(
+                                data?.data?.user?.default_home || '/',
+                                window.browser_base_url ||
+                                    window.location.origin
+                            );
+
+                            window.location.href = destination.toString();
+                            return;
+                        }
+
+                        window.location.href =
+                            window.browser_base_url || window.location.origin;
                     })
                     .catch((error) => {
                         modal.close();
-                        console.log(error);
+                        console.error(error);
+                        awesomeModal.error(
+                            'No se pudo cambiar de usuario',
+                            error?.message ||
+                                'Ocurrió un problema al iniciar sesión como el usuario seleccionado.'
+                        );
                     });
             }
         });

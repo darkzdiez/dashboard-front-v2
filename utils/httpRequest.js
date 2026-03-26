@@ -1,10 +1,40 @@
-// Intenta parsear JSON sin romper el flujo si el backend devolvió vacío,
-// HTML o texto plano. Esto evita que un error de parsing tape el error real.
-const parseJsonSafe = async (response) => {
+// Lee el body una sola vez para poder:
+// - parsear JSON cuando corresponde
+// - conservar HTML / texto crudo para previsualizar dumps tipo dd()
+const readResponsePayload = async (response) => {
+    const rawText = await response.text();
+    const trimmedText = rawText.trim();
+    const contentType = `${response.headers.get('content-type') || ''}`.toLowerCase();
+
+    if (trimmedText === '') {
+        return {
+            bodyData: null,
+            rawText,
+        };
+    }
+
+    const looksLikeJson =
+        contentType.includes('application/json') ||
+        contentType.includes('+json') ||
+        /^[\[{]/.test(trimmedText);
+
+    if (!looksLikeJson) {
+        return {
+            bodyData: null,
+            rawText,
+        };
+    }
+
     try {
-        return await response.json();
+        return {
+            bodyData: JSON.parse(rawText),
+            rawText,
+        };
     } catch (error) {
-        return null;
+        return {
+            bodyData: null,
+            rawText,
+        };
     }
 };
 
@@ -88,6 +118,113 @@ const parseXAppHeaderValue = (value) => {
     return trimmedValue;
 };
 
+const shouldResolveAgainstBackend = (url) => {
+    if (typeof url !== 'string') {
+        return false;
+    }
+
+    if (/^(?:[a-z]+:)?\/\//i.test(url)) {
+        return false;
+    }
+
+    return /^(?:\/)?(?:api|auth|docs|storage|health)(?:\/|$)/i.test(
+        url.trim()
+    );
+};
+
+const resolveRequestUrl = (url) => {
+    if (!shouldResolveAgainstBackend(url)) {
+        return url;
+    }
+
+    if (typeof window?.apiUrl === 'function') {
+        return window.apiUrl(url);
+    }
+
+    const backendBaseUrl = (
+        window?.public_path || window?.location?.origin || ''
+    ).replace(/\/$/, '');
+
+    return new URL(String(url || ''), `${backendBaseUrl}/`).toString();
+};
+
+const isLaravelDebugDumpResponse = (response, rawText) => {
+    if (!rawText || typeof rawText !== 'string') {
+        return false;
+    }
+
+    const contentType = `${response.headers.get('content-type') || ''}`.toLowerCase();
+    if (!contentType.includes('text/html')) {
+        return false;
+    }
+
+    const normalizedText = rawText.toLowerCase();
+
+    return (
+        normalizedText.includes('sfdump = window.sfdump') ||
+        normalizedText.includes('sf-dump') ||
+        normalizedText.includes('symfony var dumper')
+    );
+};
+
+const extractDebugDumpPreviewText = (rawText) => {
+    if (!rawText || typeof DOMParser === 'undefined') {
+        return rawText;
+    }
+
+    try {
+        const documentPreview = new DOMParser().parseFromString(
+            rawText,
+            'text/html'
+        );
+
+        const dumpNode =
+            documentPreview.querySelector('pre.sf-dump') ||
+            documentPreview.body;
+
+        return dumpNode?.textContent?.trim() || rawText;
+    } catch (error) {
+        return rawText;
+    }
+};
+
+const openDebugDumpPreview = ({
+    modalApi,
+    requestUrl,
+    response,
+    rawText,
+}) => {
+    const previewText = extractDebugDumpPreviewText(rawText);
+
+    console.groupCollapsed(
+        `[httpRequest] Laravel dd() detectado · ${response.status} ${requestUrl}`
+    );
+    console.log(previewText);
+    if (previewText !== rawText) {
+        console.debug(rawText);
+    }
+    console.groupEnd();
+
+    if (typeof modalApi?.debugDump === 'function') {
+        modalApi.debugDump({
+            title: 'Se detectó un dd() en el backend',
+            html: rawText,
+            text: rawText,
+            requestUrl,
+            status: response.status,
+        });
+        return;
+    }
+
+    modalApi.alert(
+        'Se detectó un dd() en el backend',
+        `<pre style="max-height:65vh;overflow:auto;text-align:left;white-space:pre-wrap;">${rawText
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')}</pre>`
+    );
+};
+
 // Sincroniza headers x-app-* en globalState de manera totalmente dinámica.
 // Además de exponerlos en la raíz (globalState.miFlag), deja un espejo en
 // globalState.appHeaders para consumo centralizado y debugging.
@@ -130,7 +267,13 @@ const maybeReloadOnVersionMismatch = (headers, globalState) => {
     if (!globalState) {
         return;
     }
+    if (globalState.disableVersionMismatchReload === true) {
+        return;
+    }
     const appVersion = headers.get('x-app-version');
+    if (!appVersion || !globalState.real_version) {
+        return;
+    }
     if (appVersion !== globalState.real_version) {
         setTimeout(() => {
             window.location.reload();
@@ -146,23 +289,45 @@ const createHttpRequest = ({ router, globalState, awesomeModal }) => {
         method = 'GET',
         data,
         errors,
+        headers = {},
+        skipAuth = false,
+        redirectOnUnauthorized = true,
         displayModalErrors = true,
         clearErrors = true,
     }) => {
+        const modalApi =
+            window.awesomeModal ||
+            awesomeModal || {
+                error: () => {},
+            };
         // Por defecto limpiamos errores previos para evitar confusión visual.
         if (clearErrors) {
             clearErrorsState(errors);
         }
 
+        const accessToken =
+            globalState?.auth?.accessToken ||
+            globalState?.auth?.access_token ||
+            globalState?.auth?.token ||
+            null;
+        const requestHeaders = {
+            Accept: 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            ...headers,
+        };
+        const requestUrl = resolveRequestUrl(url);
+
+        if (!skipAuth && accessToken && !requestHeaders.Authorization) {
+            requestHeaders.Authorization = `Bearer ${accessToken}`;
+        }
+
         // Request base:
         // - no forzamos Content-Type para no romper FormData
         // - enviamos X-Requested-With para diferenciar requests AJAX en backend
-        const response = await fetch(url, {
+        const response = await fetch(requestUrl, {
             method: method,
             body: data,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-            },
+            headers: requestHeaders,
         });
 
         // 1) Actualizamos flags de app desde headers x-app-*
@@ -170,18 +335,41 @@ const createHttpRequest = ({ router, globalState, awesomeModal }) => {
         updateAppFlags(response.headers, globalState);
         maybeReloadOnVersionMismatch(response.headers, globalState);
 
-        const bodyData = await parseJsonSafe(response);
+        const { bodyData, rawText } = await readResponsePayload(response);
         const isLoginRequest =
-            typeof url === 'string' && url.includes('/api/login');
+            typeof requestUrl === 'string' &&
+            (requestUrl.includes('/api/login') ||
+                requestUrl.includes('/api/auth/login'));
+
+        if (isLaravelDebugDumpResponse(response, rawText)) {
+            openDebugDumpPreview({
+                modalApi,
+                requestUrl,
+                response,
+                rawText,
+            });
+
+            throw {
+                status: 'debug_dump',
+                message: 'Se detectó un dd() en el backend.',
+                responseStatus: response.status,
+                requestUrl,
+                rawText,
+            };
+        }
 
         // Camino feliz: delegamos el body parseado al caller.
         if (response.ok) {
-            return bodyData;
+            return bodyData ?? rawText;
         }
 
         // 401: sesión vencida/no autorizada. Si no es login, redirige a login.
         if (response.status === 401) {
-            if (!isLoginRequest) {
+            if (typeof globalState?.onUnauthorized === 'function') {
+                await globalState.onUnauthorized();
+            }
+
+            if (!isLoginRequest && redirectOnUnauthorized) {
                 router.push('/login');
             }
             throw normalizeErrorPayload(bodyData, 'Ocurrió un error al iniciar sesión. Verifica tus credenciales e intenta nuevamente.');
@@ -189,7 +377,7 @@ const createHttpRequest = ({ router, globalState, awesomeModal }) => {
 
         // 405: método no permitido (normalmente mismatch frontend/backend).
         if (response.status === 405) {
-            awesomeModal.error(
+            modalApi.error(
                 'Error',
                 `
                 <p>Ha ocurrido un error 405: Metodo no permitido.</p>
@@ -202,7 +390,7 @@ const createHttpRequest = ({ router, globalState, awesomeModal }) => {
         // 413: payload demasiado grande (típico de uploads).
         if (response.status === 413) {
             const maxFileSize = getMetaContent('max-file-size');
-            awesomeModal.error(
+            modalApi.error(
                 'Error',
                 `
                 <p>Ha ocurrido un error 413: Contenido demasiado grande.</p>
@@ -233,7 +421,7 @@ const createHttpRequest = ({ router, globalState, awesomeModal }) => {
                     })
                     .join('');
                 // console.log(['aqui', response.status, displayModalErrors, bodyData?.errors, errorsMarkup])
-                window.awesomeModal.error(
+                modalApi.error(
                     'Tiene errores en el formulario',
                     `
                     ${
@@ -264,7 +452,7 @@ const createHttpRequest = ({ router, globalState, awesomeModal }) => {
             });
 
             if (hasFileTooLarge) {
-                awesomeModal.error(
+                modalApi.error(
                     'Error',
                     `
                     <p>El formulario contiene un archivo demasiado grande.</p>
@@ -278,7 +466,7 @@ const createHttpRequest = ({ router, globalState, awesomeModal }) => {
         // 500: error inesperado de servidor.
         if (response.status === 500) {
             if (displayModalErrors) {
-                awesomeModal.error(
+                modalApi.error(
                     'Error',
                     `
                     <p>Ha ocurrido un error inesperado.</p>

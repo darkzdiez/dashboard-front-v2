@@ -65,6 +65,37 @@
 import { onMounted, reactive, ref, useSlots, watch } from 'vue';
 import Dropdown from './dropdown.vue';
 import ModalOptions from './modal.vue';
+
+const buildEndpointUrl = (endpoint) => {
+    return new URL(
+        `${window.public_path || ''}${endpoint || ''}`,
+        window.location.origin
+    );
+};
+
+const buildRequestHeaders = () => {
+    const headers = {
+        Accept: 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+    };
+    const accessToken =
+        window.$globalState?.auth?.accessToken ||
+        window.$globalState?.auth?.access_token ||
+        null;
+
+    if (accessToken) {
+        headers.Authorization = `Bearer ${accessToken}`;
+    }
+
+    return headers;
+};
+
+const redirectToLogin = () => {
+    window.location.assign(
+        `${window.browser_base_url || window.location.origin}/login`
+    );
+};
+
 const props = defineProps({
     label: {
         type: String,
@@ -220,7 +251,6 @@ const state = reactive({
             this.selected = null;
             emit('update:modelValue', null);
         }
-        console.log(this.selected);
         // this.$forceUpdate();
     },
     remove: function (option) {
@@ -296,20 +326,16 @@ const filterOptions = () => {
 
 const syncData = () => {
     // let modal = awesomeModal.loading()
-    try {
-        if (!props.endpoint && props.options.length) {
-            paginator.data.push(...props.options);
-            return;
-        }
-    } catch (error) {
-        console.error('Error al sincronizar los datos:', error);
+    if (!props.endpoint && Array.isArray(props.options) && props.options.length) {
+        paginator.data.splice(0, paginator.data.length);
+        paginator.data.push(...props.options);
         return;
     }
     if (!props.endpoint) {
         console.error('No se ha definido el endpoint');
         return;
     }
-    let url = new URL(window.public_path + props.endpoint);
+    let url = buildEndpointUrl(props.endpoint);
     const form = new FormData();
     form.append('search', state.search);
     /*
@@ -321,11 +347,27 @@ const syncData = () => {
     */
     // fetch using method POST
 
-    fetch(url, {
+    fetch(url.toString(), {
         method: 'POST',
         body: form,
+        headers: buildRequestHeaders(),
     })
-        .then((response) => response.json())
+        .then(async (response) => {
+            const data = await response.json().catch(() => null);
+
+            if (!response.ok) {
+                const requestError = new Error(
+                    data?.message || 'Error al sincronizar los datos.'
+                );
+                requestError.response = {
+                    status: response.status,
+                    data,
+                };
+                throw requestError;
+            }
+
+            return data;
+        })
         .then((data) => {
             // console.clear()
             // console.log('aqui vamos')
@@ -348,21 +390,19 @@ const syncData = () => {
             // modal.close()
         })
         .catch((error) => {
-            // console.clear()
-            // console.log('Aqui ocurrio un error')
-            // console.log(error)
-            // modal.close()
-            // Código de estado: 401 Unauthorized
-            if (error.response.status == 401) {
+            const responseStatus = error?.response?.status;
+
+            if (responseStatus == 401) {
                 console.log('acceso denegado');
-                router.push('/login');
+                redirectToLogin();
                 return false;
             }
-            // Código de estado: 422 Unprocessable Content
-            if (error.response.status == 422) {
-                Object.assign(errors, error.response.data.errors);
+            if (responseStatus == 422) {
+                Object.assign(errors, error.response.data?.errors || {});
                 return false;
             }
+
+            console.error('Error al sincronizar los datos:', error);
         });
 };
 const refreshData = () => {

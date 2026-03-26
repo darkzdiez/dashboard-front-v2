@@ -84,14 +84,18 @@ const dashboardFront = ({
     InputsRegister(app);
     BoxesRegister(app);
 
-    window.public_path = document.head.querySelector(
+    const publicPathMeta = document.head.querySelector(
         'meta[name="public-path"]'
     );
-    if (window.public_path) {
-        window.public_path = window.public_path.content.replace(/\/$/, '');
+    if (publicPathMeta) {
+        window.public_path = publicPathMeta.content.replace(/\/$/, '');
+    } else if (typeof window.public_path === 'string' && window.public_path) {
+        window.public_path = window.public_path.replace(/\/$/, '');
     } else {
         window.public_path = '';
     }
+    window.browser_base_url =
+        (window.browser_base_url || window.location.origin).replace(/\/$/, '');
 
     window.todayFormatted = () => {
         // Obtener la fecha actual
@@ -139,7 +143,18 @@ const dashboardFront = ({
 
     // public asset or public path or path asset
     window.pathAsset = (path) => {
-        return `${window.public_path}/${path}`;
+        const assetBaseUrl = (
+            window.browser_base_url || window.location.origin
+        ).replace(/\/$/, '');
+
+        return `${assetBaseUrl}/${String(path || '').replace(/^\/+/, '')}`;
+    };
+    window.apiUrl = (path) => {
+        const apiBaseUrl = (
+            window.public_path || window.location.origin
+        ).replace(/\/$/, '');
+
+        return new URL(String(path || ''), `${apiBaseUrl}/`).toString();
     };
     window.toggle = (value, trueValue, falseValue) => {
         if (value === trueValue) {
@@ -148,12 +163,27 @@ const dashboardFront = ({
         return trueValue;
     };
 
+    const useLegacyAuthBootstrap =
+        window.$globalState?.disableLegacyAuthBootstrap !== true;
+    const existingAuthState =
+        window.$globalState?.auth &&
+        typeof window.$globalState.auth === 'object'
+            ? window.$globalState.auth
+            : {};
+
     window.$globalState.auth = {
         user: {},
         status: 'error',
         config: {},
+        ...existingAuthState,
+        user: {
+            ...(existingAuthState.user || {}),
+        },
     };
-    window.$globalState.render = false;
+
+    if (useLegacyAuthBootstrap) {
+        window.$globalState.render = false;
+    }
 
     window.userCan = (permission) => {
         if (window?.$globalState?.auth?.status == 'success') {
@@ -234,7 +264,14 @@ const dashboardFront = ({
 
     window.appInstance = app;
     const logout = () => {
-        let modal = awesomeModal.loading();
+        if (
+            window.$globalState?.disableLegacyAuthBootstrap === true &&
+            typeof window.$globalState?.logout === 'function'
+        ) {
+            return window.$globalState.logout();
+        }
+
+        let modal = window.awesomeModal.loading();
         httpRequest({
             url: window.public_path + '/api/logout',
             method: 'GET',
@@ -250,7 +287,14 @@ const dashboardFront = ({
     };
     window.logout = logout;
 
-    app.provide('$globalState', window.$globalState);
+    if (
+        !Object.prototype.hasOwnProperty.call(
+            app._context.provides,
+            '$globalState'
+        )
+    ) {
+        app.provide('$globalState', window.$globalState);
+    }
 
     window.$goBack = (defaultRoute = null) => {
         if (window.history.state.back) {
@@ -263,67 +307,76 @@ const dashboardFront = ({
     app.config.globalProperties.$goBack = window.$goBack;
     //app.config.globalProperties.$globalState = window.$globalState
 
-    window.verifyAuth = async () => {
-        return new Promise((resolve, reject) => {
-            httpRequest({
-                url: window.public_path + '/api/check-auth',
-                method: 'GET',
-            })
-                .then((data) => {
-                    if (data.status == 'error') {
-                        window.$globalState.auth.status = 'error';
-                        window.$globalState.render = true;
-                        awesomeModal.closeAll();
-                        // URL accedible sin autenticación
-                        let URLs = [
-                            '/login',
-                            '/register',
-                            '/recover-password',
-                            '/password-reset',
-                            '/lista-de-empaque-f4ak74945yklhesf03209uerj093u40934g',
-                        ];
-                        if (!URLs.includes(router.currentRoute.value.path)) {
-                            router.push('/login');
-                        }
-                        resolve(false);
-                        return;
-                    }
-                    Object.assign(window.$globalState.auth.user, data.user);
-                    Object.assign(window.$globalState.auth.config, data.config);
-                    //window.dataLayer.push({
-                    // window.dataLayer[0]['event'] = 'login',
-                    ((window.dataLayer[0]['appUserId'] = data.user.id),
-                        (window.dataLayer[0]['appUserName'] = data.user.name),
-                        (window.dataLayer[0]['appUserEmail'] = data.user.email),
-                        (window.dataLayer[0]['appUserUsername'] =
-                            data.user.username),
-                        (window.dataLayer[0]['appUserOrganizationID'] =
-                            data.user.organization_id),
-                        (window.dataLayer[0]['appUserOrganizationName'] =
-                            data.user.organization_name),
-                        (window.dataLayer[0]['appUserOrganizationTypeID'] =
-                            data.user.organization_type_id),
-                        (window.dataLayer[0]['appUserOrganizationTypeName'] =
-                            data.user.organization_type_name),
-                        //})
-                        (window.$globalState.auth.status = 'success'));
-                    window.$globalState.render = true;
-
-                    // si window.$globalState.auth.user.must_change_password es true
-                    if (
-                        window.$globalState.auth.user.must_change_password &&
-                        router.currentRoute.value.path != '/profile'
-                    ) {
-                        console.log('debe cambiar la contraseña');
-                        window.location.href = '/profile';
-                    }
-
-                    resolve(true);
+    if (useLegacyAuthBootstrap) {
+        window.verifyAuth = async () => {
+            return new Promise((resolve, reject) => {
+                httpRequest({
+                    url: window.public_path + '/api/check-auth',
+                    method: 'GET',
                 })
-                .catch((error) => {});
-        });
-    };
-    window.verifyAuth();
+                    .then((data) => {
+                        if (data.status == 'error') {
+                            window.$globalState.auth.status = 'error';
+                            window.$globalState.render = true;
+                            awesomeModal.closeAll();
+                            // URL accedible sin autenticación
+                            let URLs = [
+                                '/login',
+                                '/register',
+                                '/recover-password',
+                                '/password-reset',
+                                '/lista-de-empaque-f4ak74945yklhesf03209uerj093u40934g',
+                            ];
+                            if (!URLs.includes(router.currentRoute.value.path)) {
+                                router.push('/login');
+                            }
+                            resolve(false);
+                            return;
+                        }
+                        Object.assign(window.$globalState.auth.user, data.user);
+                        Object.assign(window.$globalState.auth.config, data.config);
+                        //window.dataLayer.push({
+                        // window.dataLayer[0]['event'] = 'login',
+                        ((window.dataLayer[0]['appUserId'] = data.user.id),
+                            (window.dataLayer[0]['appUserName'] = data.user.name),
+                            (window.dataLayer[0]['appUserEmail'] = data.user.email),
+                            (window.dataLayer[0]['appUserUsername'] =
+                                data.user.username),
+                            (window.dataLayer[0]['appUserOrganizationID'] =
+                                data.user.organization_id),
+                            (window.dataLayer[0]['appUserOrganizationName'] =
+                                data.user.organization_name),
+                            (window.dataLayer[0]['appUserOrganizationTypeID'] =
+                                data.user.organization_type_id),
+                            (window.dataLayer[0]['appUserOrganizationTypeName'] =
+                                data.user.organization_type_name),
+                            //})
+                            (window.$globalState.auth.status = 'success'));
+                        window.$globalState.render = true;
+
+                        // si window.$globalState.auth.user.must_change_password es true
+                        if (
+                            window.$globalState.auth.user.must_change_password &&
+                            router.currentRoute.value.path != '/profile'
+                        ) {
+                            console.log('debe cambiar la contraseña');
+                            window.location.href = '/profile';
+                        }
+
+                        resolve(true);
+                    })
+                    .catch((error) => {});
+            });
+        };
+        window.verifyAuth();
+    } else {
+        window.verifyAuth =
+            typeof window.$globalState?.verifyAuth === 'function'
+                ? window.$globalState.verifyAuth
+                : async () => {
+                      return window.$globalState?.auth?.status === 'success';
+                  };
+    }
     app.mixin({
         methods: {
             pathAsset(path) {
@@ -663,7 +716,7 @@ const dashboardFront = ({
         const syncData = (url, add = { prespreserveLastPage: false }) => {
             // console.log(add)
             // se muestra el modal de carga
-            let modal = awesomeModal.loading();
+            let modal = window.awesomeModal.loading();
             // se verifica si el endpoint tiene la propiedad lastUrl, si no la tiene, se le asigna el valor de dataUrl
             if (!endpoint.lastUrl) {
                 endpoint.lastUrl = endpoint.dataUrl;

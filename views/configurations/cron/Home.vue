@@ -130,7 +130,7 @@ import { useRoute, useRouter } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
 const pagination = dataPaginator({
-    urlBase: new URL(window.public_path + '/api/cron'),
+    urlBase: new URL('/api/cron', window.public_path || window.location.origin),
     filtersKeys: ['name', 'guard_name', 'description'],
     config: {
         cachePrefix: 'cron',

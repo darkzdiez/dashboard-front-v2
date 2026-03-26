@@ -1,5 +1,6 @@
 <script setup>
 import { reactive } from 'vue';
+import DebugDumpPreview from './DebugDumpPreview.vue';
 import Item from './Item.vue';
 const modals = reactive([]);
 
@@ -23,8 +24,7 @@ const open = (data) => {
 
     const key = modals.push(item);
 
-    item.callback.promise.then((response) => {
-        // console.log('paso 2')
+    const cleanupModal = () => {
         if (item.autoCloseTimer) {
             clearTimeout(item.autoCloseTimer);
         }
@@ -32,17 +32,9 @@ const open = (data) => {
             window.removeEventListener('keydown', item.keydown);
         }
         modals[key - 1] = false;
-    });
-    item.callback.promise.catch((error) => {
-        // console.log('paso 3')
-        if (item.autoCloseTimer) {
-            clearTimeout(item.autoCloseTimer);
-        }
-        if (item.keydown) {
-            window.removeEventListener('keydown', item.keydown);
-        }
-        modals[key - 1] = false;
-    });
+    };
+
+    item.callback.promise.then(cleanupModal, cleanupModal);
     // close is alias for resolve
     item.callback.close = item.callback.resolve;
 
@@ -177,14 +169,32 @@ window.awesomeModal.alert = (
     }).promise;
 };
 
+window.awesomeModal.debugDump = ({
+    title = 'Se detectó un dd() en el backend',
+    html = '',
+    text = '',
+    requestUrl = '',
+    status = null,
+} = {}) => {
+    return open({
+        type: 'component',
+        component: DebugDumpPreview,
+        title,
+        html,
+        text,
+        requestUrl,
+        status,
+    }).promise;
+};
+
 import { useRouter } from 'vue-router';
 const router = useRouter() || window.appDependencies?.router;
 if (router) {
-    router.beforeEach((to, from, next) => {
+    router.beforeEach((to, from) => {
         if (to.path != from.path) {
             closeAll();
         }
-        next();
+        return true;
     });
 }
 </script>

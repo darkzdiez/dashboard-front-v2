@@ -151,7 +151,7 @@ const route = useRoute();
 const router = useRouter();
 const layout = ref('list');
 const pagination = dataPaginator({
-    urlBase: new URL(window.public_path + '/api/group'),
+    urlBase: new URL('/api/group', window.public_path || window.location.origin),
     filtersKeys: ['name', 'guard_name', 'description'],
     config: {
         cachePrefix: 'group',

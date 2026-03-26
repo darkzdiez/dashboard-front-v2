@@ -159,7 +159,10 @@ const route = useRoute();
 const router = useRouter();
 
 const pagination = dataPaginator({
-    urlBase: new URL(window.public_path + '/api/permission'),
+    urlBase: new URL(
+        '/api/permission',
+        window.public_path || window.location.origin
+    ),
     filtersKeys: ['group_prefix', 'name', 'guard_name', 'description'],
     config: {
         cachePrefix: 'shipment',

@@ -172,7 +172,7 @@ const route = useRoute();
 const router = useRouter();
 
 const pagination = dataPaginator({
-    urlBase: new URL(window.public_path + '/api/jobs'),
+    urlBase: new URL('/api/jobs', window.public_path || window.location.origin),
     filtersKeys: [
         'title',
         'queue',

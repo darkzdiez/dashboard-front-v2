@@ -126,7 +126,7 @@ const uploadFiles = () => {
     files.forEach((file) => {
         formData.append('photos[]', file);
     });
-    fetch('/api/simple-photo-gallery', {
+    fetch(window.apiUrl('/api/simple-photo-gallery'), {
         method: 'POST',
         body: formData,
     })
