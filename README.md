@@ -48,6 +48,13 @@ dashboardFront({
 - Inputs (registro completo)
 - Boxes (registro completo)
 
+## Documentación
+
+- [Impersonación con link temporal](./docs/impersonacion-link-temporal.md)
+- [httpRequest y dataPaginator](./docs/httpRequest-dataPaginator.md)
+- [awesomeModal](./docs/awesomeModal.md)
+- [Selección múltiple](./docs/multiple-selection-records.md)
+
 ## Desarrollo Local
 
 Este paquete está configurado para trabajar con pnpm workspaces. Los cambios realizados en el paquete se reflejarán automáticamente en los proyectos que lo utilicen dentro del workspace.

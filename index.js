@@ -32,6 +32,52 @@ import TableTh from './components/Table/TableTh.vue';
 import TopBarJobs from './components/TopBar/TopBarJobs.vue';
 import TopBarNews from './components/TopBar/TopBarNews.vue';
 import { createHttpRequest } from './utils/httpRequest.js';
+import LoginAsLink from './views/login/LoginAsLink.vue';
+
+// Keep package-managed public routes in one place so legacy auth bootstrap
+// and router injection stay aligned across all consumers.
+const DASHBOARD_PUBLIC_ROUTE_PATHS = new Set([
+    '/login',
+    '/register',
+    '/recover-password',
+    '/password-reset',
+    '/lista-de-empaque-f4ak74945yklhesf03209uerj093u40934g',
+    '/login-as-link',
+]);
+
+const hasRouteWithPath = (router, path) => {
+    if (!router || typeof router.getRoutes !== 'function') {
+        return false;
+    }
+
+    return router.getRoutes().some((route) => route.path === path);
+};
+
+const registerDashboardRoutes = (router) => {
+    if (!router || typeof router.addRoute !== 'function') {
+        return;
+    }
+
+    // Consumers may still override the route locally, so avoid duplicate names
+    // and duplicate paths before registering the shared implementation.
+    if (
+        (typeof router.hasRoute === 'function' &&
+            router.hasRoute('login-as-link')) ||
+        hasRouteWithPath(router, '/login-as-link')
+    ) {
+        return;
+    }
+
+    router.addRoute({
+        path: '/login-as-link',
+        name: 'login-as-link',
+        component: LoginAsLink,
+    });
+};
+
+const isDashboardPublicRoutePath = (path) => {
+    return DASHBOARD_PUBLIC_ROUTE_PATHS.has(String(path || ''));
+};
 
 const dashboardFront = ({
     app,
@@ -156,6 +202,9 @@ const dashboardFront = ({
 
         return new URL(String(path || ''), `${apiBaseUrl}/`).toString();
     };
+    // Register shared public routes before auth bootstrap runs so direct
+    // navigation to /login-as-link is resolved by the router on first load.
+    registerDashboardRoutes(router);
     window.toggle = (value, trueValue, falseValue) => {
         if (value === trueValue) {
             return falseValue;
@@ -319,15 +368,14 @@ const dashboardFront = ({
                             window.$globalState.auth.status = 'error';
                             window.$globalState.render = true;
                             awesomeModal.closeAll();
-                            // URL accedible sin autenticación
-                            let URLs = [
-                                '/login',
-                                '/register',
-                                '/recover-password',
-                                '/password-reset',
-                                '/lista-de-empaque-f4ak74945yklhesf03209uerj093u40934g',
-                            ];
-                            if (!URLs.includes(router.currentRoute.value.path)) {
+                            // Legacy auth bootstrap should only redirect when
+                            // the current route is protected. Public package
+                            // routes like /login-as-link must remain reachable.
+                            if (
+                                !isDashboardPublicRoutePath(
+                                    router.currentRoute.value.path
+                                )
+                            ) {
                                 router.push('/login');
                             }
                             resolve(false);
