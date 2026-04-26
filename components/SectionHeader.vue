@@ -14,26 +14,69 @@
 .controls {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
+    gap: 16px 20px;
+    flex-wrap: wrap;
+    min-width: 0;
     margin-bottom: 20px;
     //flex-direction: column;
     &__title {
         font-weight: 600;
         font-size: 30px;
-        line-height: 48px;
+        line-height: 38px;
         color: #000000;
         padding: 0;
         margin: 0 0 2px 0;
-        white-space: nowrap;
+        max-width: 100%;
+        overflow-wrap: anywhere;
+        white-space: normal;
         // text-transform: uppercase;
     }
     &__buttons {
         display: flex;
-        gap: 15px;
+        flex-wrap: wrap;
+        gap: 10px;
         margin-left: auto;
-        align-items: flex-end;
-        width: 100%;
+        align-items: center;
+        width: auto;
+        max-width: 100%;
         justify-content: flex-end;
+    }
+
+    @media (max-width: 768px) {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+
+        &__title {
+            font-size: 24px;
+            line-height: 30px;
+            width: 100%;
+        }
+
+        &__buttons {
+            justify-content: flex-start;
+            align-items: stretch;
+            margin-left: 0;
+            width: 100%;
+            gap: 8px;
+        }
+
+        &__buttons :deep(.btn) {
+            flex: 1 1 calc(50% - 8px);
+            min-width: 0;
+            min-height: 38px;
+            height: auto;
+            padding: 9px 14px;
+            line-height: 1.2;
+            white-space: normal;
+        }
+    }
+
+    @media (max-width: 480px) {
+        &__buttons :deep(.btn) {
+            flex-basis: 100%;
+        }
     }
 }
 </style>

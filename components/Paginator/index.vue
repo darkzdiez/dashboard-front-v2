@@ -44,6 +44,7 @@ defineProps({
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 12px;
     margin-top: 20px;
 
     &__info {
@@ -55,6 +56,10 @@ defineProps({
         display: flex;
         justify-content: flex-end;
         align-items: center;
+        gap: 8px;
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
 
         button {
             border: none;
@@ -62,7 +67,7 @@ defineProps({
             color: #666;
             font-size: 0.9rem;
             cursor: pointer;
-            margin-left: 10px;
+            margin-left: 0;
             padding: 5px 10px;
             border-radius: 5px;
             transition: all 0.2s ease-in-out;
@@ -78,6 +83,26 @@ defineProps({
                     background-color: transparent;
                 }
             }
+        }
+    }
+
+    @media (max-width: 768px) {
+        flex-direction: column;
+        align-items: stretch;
+
+        &__info {
+            line-height: 1.45;
+        }
+
+        &__buttons {
+            justify-content: flex-start;
+            padding-bottom: 4px;
+        }
+
+        &__buttons button {
+            flex: 0 0 auto;
+            min-width: 36px;
+            min-height: 36px;
         }
     }
 }

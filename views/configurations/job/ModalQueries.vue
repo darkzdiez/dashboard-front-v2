@@ -75,6 +75,43 @@ const close = () => {
         width: 100%;
     }
 }
+
+pre {
+    max-width: 100%;
+    overflow: auto;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+@media (max-width: 768px) {
+    .modal {
+        width: calc(100vw - 24px);
+        max-height: calc(100vh - 20px);
+        min-height: 0;
+        margin: 10px auto;
+
+        &__header {
+            padding: 18px 16px 14px;
+            gap: 12px;
+        }
+
+        &__body {
+            padding: 0 16px 20px;
+        }
+    }
+
+    h1.controls__title {
+        font-size: 20px !important;
+        line-height: 1.25;
+        white-space: normal;
+    }
+
+    pre {
+        font-size: 12px;
+    }
+}
 .modal {
     animation: loading 0.5s ease-in-out;
     @keyframes loading {
